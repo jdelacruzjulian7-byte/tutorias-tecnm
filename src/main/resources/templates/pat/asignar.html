@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Asignar PAT a Carrera | Sistema Tutorías TecNM</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Asignar PAT a Carrera')}"></div>
+
+        <section class="card" style="max-width:600px;">
+            <div class="card-title">📋 Asignar PAT General a una Carrera</div>
+
+            <!-- Info del PAT General -->
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:16px 20px;margin-bottom:24px;">
+                <div style="font-size:12px;color:#4f46e5;font-weight:700;text-transform:uppercase;margin-bottom:6px;">PAT General seleccionado</div>
+                <div style="font-size:16px;font-weight:700;color:#1e3a8a;" th:text="'Versión: ' + ${pat.version}">v1</div>
+                <div style="font-size:13px;color:#374151;margin-top:4px;"
+                     th:text="'Semestre: ' + (${pat.semestre != null ? pat.semestre.nombre : '—'})"></div>
+            </div>
+
+            <p style="font-size:14px;color:#374151;margin-bottom:20px;">
+                Se creará una <strong>copia de este PAT</strong> para la carrera seleccionada,
+                con todas sus actividades. El coordinador de esa carrera podrá editarlas según sus necesidades.
+            </p>
+
+            <form th:action="@{/pats/asignar/{id}(id=${pat.id})}" method="post">
+                <div class="form-group">
+                    <label class="form-label">Selecciona la Carrera *</label>
+                    <select class="form-input" name="carrera.id" required>
+                        <option value="">-- Selecciona una carrera --</option>
+                        <option th:each="c : ${carreras}"
+                                th:value="${c.id}"
+                                th:text="${c.nombre}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="flex gap-12" style="margin-top:24px;">
+                    <button type="submit" class="btn btn-primary">✅ Asignar y crear PAT de carrera</button>
+                    <a th:href="@{/pats}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

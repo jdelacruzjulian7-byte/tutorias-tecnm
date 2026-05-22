@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Actividad | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+		<main class="main">
+			<div
+				th:replace="~{fragments/layout :: topbar(${actividad.id == null ? 'Nueva Actividad' : 'Editar Actividad'})}"></div>
+
+			<section class="card" style="max-width: 900px;">
+				<div class="card-title"
+					th:text="${actividad.id == null ? 'Nueva Actividad del PAT' : 'Editar Actividad del PAT'}">
+					Actividad</div>
+
+				<form th:action="@{/actividades/guardar}" th:object="${actividad}"
+					method="post">
+					<input type="hidden" th:field="*{id}" />
+
+					<!-- PAT oculto si viene desde el detalle del PAT -->
+					<input type="hidden" name="pat.id"
+						th:value="${actividad.pat != null ? actividad.pat.id : ''}" />
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Semana *</label> <select
+								class="form-input" th:field="*{semana}" required>
+								<option value="">-- Selecciona --</option>
+								<option th:each="n : ${#numbers.sequence(1,13)}" th:value="${n}"
+									th:text="'Semana ' + ${n}"></option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Fecha *</label> <input type="date"
+								class="form-input" th:field="*{fecha}" required />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Tema / Actividad *</label> <input
+							type="text" class="form-input" th:field="*{tema}"
+							placeholder="Ej. Detección de necesidades académicas" required />
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Objetivo *</label>
+						<textarea class="form-input" th:field="*{objetivo}" rows="3"
+							placeholder="Describir el objetivo principal de esta actividad..."
+							required></textarea>
+					</div>
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Ponente</label> <input type="text"
+								class="form-input" th:field="*{ponente}"
+								placeholder="Nombre del tutor o ponente invitado" />
+						</div>
+						<div class="form-group">
+							<label class="form-label">Tipo *</label> <select
+								class="form-input" th:field="*{tipo}" required>
+								<option value="">-- Selecciona tipo --</option>
+								<option value="INFORMACION">Información</option>
+								<option value="FORMACION">Formación</option>
+								<option value="ORIENTACION">Orientación</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Recursos / Materiales</label>
+						<textarea class="form-input" th:field="*{recursos}" rows="2"
+							placeholder="Ej. Proyector, formato de detección de necesidades, hojas...">
+                    </textarea>
+					</div>
+
+					<!-- Solo mostrar selector de PAT si viene desde listado general -->
+					<div class="form-group" th:if="${actividad.pat == null}">
+						<label class="form-label">PAT Asociado</label> <select
+							class="form-input" name="pat.id">
+							<option value="">-- Sin PAT --</option>
+							<option th:each="p : ${pats}" th:value="${p.id}"
+								th:text="${p.version + ' — ' + (p.carrera != null ? p.carrera.nombre : '') + ' (' + (p.semestre != null ? p.semestre.nombre : '') + ')'}">
+							</option>
+						</select>
+					</div>
+
+					<!-- Info del PAT al que pertenece -->
+					<div th:if="${actividad.pat != null}"
+						style="background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #1e3a8a;">
+						📋 Esta actividad pertenece al PAT: <strong
+							th:text="${actividad.pat.version}"></strong> — <span
+							th:text="${actividad.pat.carrera != null ? actividad.pat.carrera.nombre : ''}"></span>
+						(<span
+							th:text="${actividad.pat.semestre != null ? actividad.pat.semestre.nombre : ''}"></span>)
+					</div>
+
+					<!-- Botones -->
+					<div class="flex gap-12" style="margin-top: 24px;">
+						<button type="submit" class="btn btn-primary"
+							th:text="${actividad.id == null ? 'Guardar actividad' : 'Actualizar actividad'}">
+							Guardar</button>
+						<a
+							th:href="${actividad.pat != null ? '/pats/detalle/' + actividad.pat.id : '/actividades'}"
+							class="btn btn-secondary">Cancelar</a>
+					</div>
+
+				</form>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

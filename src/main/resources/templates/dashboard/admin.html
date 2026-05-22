@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard Admin | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+.overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, .65);
+	backdrop-filter: blur(4px);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	z-index: 999;
+	padding: 20px;
+}
+
+.overlay.open {
+	display: flex;
+}
+
+.modal {
+	background: var(--surface, #1a1d27);
+	border: 1px solid var(--borde, #2e3250);
+	border-radius: 14px;
+	width: 100%;
+	max-width: 800px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 18px 22px;
+	border-bottom: 1px solid var(--borde, #2e3250);
+}
+
+.modal-title {
+	font-size: 16px;
+	font-weight: 800;
+}
+
+.modal-close {
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 18px;
+	color: #888;
+}
+
+.modal-close:hover {
+	color: #fff;
+}
+
+.modal-body {
+	padding: 16px;
+	overflow-y: auto;
+	flex: 1;
+}
+
+.modal-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 14px 22px;
+	border-top: 1px solid var(--borde, #2e3250);
+}
+
+.pdf-preview-area {
+	background: #fff;
+	color: #111;
+	padding: 28px;
+	border-radius: 8px;
+	font-size: 12px;
+}
+
+.pdf-header-doc {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.pdf-logo {
+	width: 40px;
+	height: 40px;
+	background: #4f6ef7;
+	border-radius: 8px;
+	display: grid;
+	place-items: center;
+	color: #fff;
+	font-weight: 800;
+	font-size: 18px;
+	flex-shrink: 0;
+}
+
+.pdf-doc-title {
+	font-size: 16px;
+	font-weight: 700;
+	margin-bottom: 14px;
+	border-bottom: 2px solid #4f6ef7;
+	padding-bottom: 8px;
+}
+
+.pdf-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 11px;
+}
+
+.pdf-table th {
+	background: #f0f4ff;
+	padding: 7px 10px;
+	text-align: left;
+	font-weight: 700;
+	border-bottom: 2px solid #c0caf5;
+}
+
+.pdf-table td {
+	padding: 6px 10px;
+	border-bottom: 1px solid #eef0f8;
+}
+
+.pdf-table tr:nth-child(even) td {
+	background: #fafbff;
+}
+
+.pdf-footer-doc {
+	margin-top: 20px;
+	font-size: 10px;
+	color: #999;
+	text-align: center;
+	border-top: 1px solid #eee;
+	padding-top: 8px;
+}
+</style>
+</head>
+<body>
+	<div class="layout">
+
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+		<main class="main">
+
+			<div
+				th:replace="~{fragments/layout :: topbar('Dashboard Administrador')}"></div>
+
+			<section class="hero">
+				<h1>Bienvenido, administrador</h1>
+				<p>Panel de control institucional &mdash; gestion global del
+					sistema de tutorias.</p>
+				<span class="hero-badge">Coordinacion Institucional</span>
+			</section>
+
+			<section class="stat-grid">
+				<div class="stat">
+					<div class="stat-label">Total tutores</div>
+					<div class="stat-value accent" th:text="${totalTutores}">0</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">Total tutorados</div>
+					<div class="stat-value success" th:text="${totalTutorados}">0</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">PATs registrados</div>
+					<div class="stat-value warn" th:text="${totalPats}">0</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">Carreras</div>
+					<div class="stat-value"
+						th:text="${carreras != null} ? ${#lists.size(carreras)} : 0">0</div>
+				</div>
+			</section>
+
+			<!-- Reportes PDF -->
+			<section class="card">
+				<div class="card-title">Reportes PDF</div>
+				<div class="flex gap-12" style="flex-wrap: wrap;">
+					<button onclick="openPdfPreview('tutores')"
+						class="btn btn-secondary">🖨️ PDF Tutores</button>
+					<button onclick="openPdfPreview('tutorados')"
+						class="btn btn-secondary">🖨️ PDF Tutorados</button>
+					<button onclick="openPdfPreview('pats')" class="btn btn-secondary">
+						🖨️ PDF PATs</button>
+				</div>
+			</section>
+
+			<!-- Tabla de tutores -->
+			<section class="card">
+				<div class="card-title">
+					Tutores registrados <a th:href="@{/tutores}"
+						class="btn btn-ghost btn-sm">Ver todos</a>
+				</div>
+				<div class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Foto</th>
+								<th>Nombre</th>
+								<th>Carrera</th>
+								<th>Estado</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="t, i : ${tutor}" th:if="${i.index < 5}">
+								<td th:text="${t.id}">1</td>
+								<td><img th:if="${t != null and t.foto != null}"
+									th:src="@{/uploads/{foto}(foto=${t.foto})}"
+									style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+									<div th:if="${t == null or t.foto == null}"
+										style="width: 36px; height: 36px; border-radius: 50%; background: #4f6ef7; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px;"
+										th:text="${t != null and t.usuario != null} ? ${#strings.substring(t.usuario.nombre,0,1)} : '?'">
+									</div></td>
+								<td
+									th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido} : '-'">-</td>
+								<td th:text="${t.carrera != null} ? ${t.carrera.nombre} : '-'">-</td>
+								<td><span th:if="${t.activo}" class="badge success">Activo</span>
+									<span th:unless="${t.activo}" class="badge danger">Inactivo</span>
+								</td>
+								<td class="text-right"><a
+									th:href="@{'/tutores/detalle/' + ${t.id}}"
+									class="btn btn-ghost btn-sm">Ver</a></td>
+							</tr>
+							<tr th:if="${#lists.isEmpty(tutor)}">
+								<td colspan="6" class="text-center text-muted">Sin tutores
+									registrados.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<section class="card">
+				<div class="card-title">
+					Tutorados registrados <a th:href="@{/tutorados}"
+						class="btn btn-ghost btn-sm">Ver todos</a>
+				</div>
+				<div class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Foto</th>
+								<th>Matrícula</th>
+								<th>Alumno</th>
+								<th>Carrera</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="td, i : ${tutorado}" th:if="${i.index < 5}">
+								<td th:text="${td.id}">1</td>
+								<td><img th:if="${td != null and td.foto != null}"
+									th:src="@{/uploads/{foto}(foto=${td.foto})}"
+									style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+									<div th:if="${td == null or td.foto == null}"
+										style="width: 36px; height: 36px; border-radius: 50%; background: #4f6ef7; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px;"
+										th:text="${td != null and td.usuario != null} ? ${#strings.substring(td.usuario.nombre,0,1)} : '?'">
+									</div></td>
+								<td th:text="${td.matricula}">M001</td>
+								<td
+									th:text="${td.usuario != null} ? ${td.usuario.nombre + ' ' + td.usuario.apellido} : '-'">-</td>
+								<td th:text="${td.carrera != null} ? ${td.carrera.nombre} : '-'">-</td>
+								<td class="text-right"><a
+									th:href="@{'/tutorados/detalle/' + ${td.id}}"
+									class="btn btn-ghost btn-sm">Ver</a></td>
+							</tr>
+							<tr th:if="${#lists.isEmpty(tutorado)}">
+								<td colspan="6" class="text-center text-muted">Sin
+									tutorados registrados.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+		</main>
+	</div>
+
+	<!-- Modal PDF -->
+	<div class="overlay" id="modal-pdf">
+		<div class="modal">
+			<div class="modal-header">
+				<span class="modal-title" id="pdf-modal-title">Vista previa
+					PDF</span>
+				<button class="modal-close" onclick="closeModal('modal-pdf')">✕</button>
+			</div>
+			<div class="modal-body">
+				<div class="pdf-preview-area" id="pdf-content"></div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-ghost" onclick="closeModal('modal-pdf')">Cerrar</button>
+				<button class="btn btn-primary" onclick="imprimirPDF()">🖨️
+					Descargar PDF</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Datos para PDF - construidos directamente desde Thymeleaf para evitar errores de serialización -->
+	<script th:inline="javascript">
+  const DATA_TUTORES = [
+    /*[# th:each="t : ${tutor}"]*/
+    {
+      nombre: /*[[${t.usuario != null ? t.usuario.nombre + ' ' + t.usuario.apellido : '-'}]]*/ '',
+      carrera: /*[[${t.carrera != null ? t.carrera.nombre : '-'}]]*/ '',
+      correo:  /*[[${t.usuario != null ? t.usuario.correo : '-'}]]*/ '',
+      activo:  /*[[${t.activo}]]*/ true
+    },
+    /*[/]*/
+  ];
+  const DATA_TUTORADOS = [
+    /*[# th:each="td : ${tutorado}"]*/
+    {
+      nombre:         /*[[${td.usuario != null ? td.usuario.nombre + ' ' + td.usuario.apellido : '-'}]]*/ '',
+      matricula:      /*[[${td.matricula}]]*/ '',
+      carrera:        /*[[${td.carrera != null ? td.carrera.nombre : '-'}]]*/ '',
+      semestreIngreso:/*[[${td.semestreIngreso}]]*/ '',
+      activo:         /*[[${td.activo}]]*/ true
+    },
+    /*[/]*/
+  ];
+  const DATA_PATS = [
+    /*[# th:each="p : ${pats}"]*/
+    {
+      id:       /*[[${p.id}]]*/ 0,
+      version:  /*[[${p.version}]]*/ '',
+      carrera:  /*[[${p.carrera != null ? p.carrera.nombre : (p.esGeneral ? 'GENERAL' : '-')}]]*/ '',
+      semestre: /*[[${p.semestre != null ? p.semestre.nombre : '-'}]]*/ '',
+      estado:   /*[[${p.estado != null ? p.estado : 'PENDIENTE'}]]*/ '',
+      esGeneral:/*[[${p.esGeneral}]]*/ false
+    },
+    /*[/]*/
+  ];
+</script>
+
+	<script>
+  function openModal(id)  { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  document.querySelectorAll('.overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+  });
+
+  const hoy = new Date().toLocaleDateString('es-MX', {year:'numeric',month:'long',day:'numeric'});
+  const enc = `<div class="pdf-header-doc">
+    <div class="pdf-logo">T</div>
+    <div>
+      <div style="font-weight:700;font-size:14px">Tecnológico Nacional de México</div>
+      <div style="font-size:11px;color:#666">Campus Chilpancingo — Coordinación de Tutorías</div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:#999;margin-bottom:16px">Generado el: <strong>${hoy}</strong></p>`;
+
+  function buildTableRows(data, cols) {
+    if (!data || data.length === 0)
+      return '<tr><td colspan="10" style="text-align:center;color:#999;padding:20px">Sin datos registrados</td></tr>';
+    return data.map((row, i) => {
+      const cells = cols.map(c => {
+        const val = row[c];
+        if (typeof val === 'boolean') return `<td>${val ? 'Activo' : 'Inactivo'}</td>`;
+        return `<td>${val !== null && val !== undefined ? val : '—'}</td>`;
+      });
+      return `<tr><td>${i+1}</td>${cells.join('')}</tr>`;
+    }).join('');
+  }
+
+  const pdfTemplates = {
+    tutores: {
+      title: 'Listado de Tutores',
+      html: () => `${enc}
+        <div class="pdf-doc-title">Tutores Registrados</div>
+        <table class="pdf-table">
+          <thead><tr><th>#</th><th>Nombre</th><th>Carrera</th><th>Correo</th><th>Estatus</th></tr></thead>
+          <tbody>${buildTableRows(DATA_TUTORES, ['nombre','carrera','correo','activo'])}</tbody>
+        </table>
+        <div class="pdf-footer-doc">Sistema de Tutorías — TecNM Campus Chilpancingo</div>`
+    },
+    tutorados: {
+      title: 'Listado de Tutorados',
+      html: () => `${enc}
+        <div class="pdf-doc-title">Tutorados Registrados</div>
+        <table class="pdf-table">
+          <thead><tr><th>#</th><th>Nombre</th><th>Matrícula</th><th>Carrera</th><th>Sem. Ingreso</th><th>Estatus</th></tr></thead>
+          <tbody>${buildTableRows(DATA_TUTORADOS, ['nombre','matricula','carrera','semestreIngreso','activo'])}</tbody>
+        </table>
+        <div class="pdf-footer-doc">Sistema de Tutorías — TecNM Campus Chilpancingo</div>`
+    },
+   pats: {
+    title: 'Programa de Accion Tutorial',
+    html: () => `${enc}
+        <div class="pdf-doc-title">PATs Registrados</div>
+        <table class="pdf-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Version</th>
+                    <th>Carrera</th>
+                    <th>Semestre</th>
+                    <th>Estado</th>
+                    <th>Descargar</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${(DATA_PATS || []).map((p, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td><span style="font-size:10px;background:${p.esGeneral ? '#dbeafe' : '#f0fdf4'};color:${p.esGeneral ? '#1e40af' : '#15803d'};padding:2px 6px;border-radius:4px;font-weight:700">${p.esGeneral ? 'GENERAL' : 'CARRERA'}</span> ${p.version || '—'}</td>
+                        <td>${p.carrera || '—'}</td>
+                        <td>${p.semestre || '—'}</td>
+                        <td><span style="font-size:11px;font-weight:700;color:${p.estado==='APROBADO'?'#16a34a':p.estado==='RECHAZADO'?'#dc2626':'#d97706'}">${p.estado || 'PENDIENTE'}</span></td>
+                        <td>
+                            <a href="/pats/pdf/${p.id}" target="_blank"
+                               style="color:#4f46e5;font-weight:700;text-decoration:none;">
+                                🖨️ PDF
+                            </a>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+        <div class="pdf-footer-doc">Sistema de Tutorias — TecNM Campus Chilpancingo</div>`
+}
+  };
+
+  function openPdfPreview(tipo) {
+    const tpl = pdfTemplates[tipo];
+    if (!tpl) return;
+    document.getElementById('pdf-modal-title').textContent = '🖨️ ' + tpl.title;
+    document.getElementById('pdf-content').innerHTML = tpl.html();
+    openModal('modal-pdf');
+  }
+
+  function imprimirPDF() {
+    html2pdf().set({
+      margin: 10,
+      filename: 'tutorias-reporte.pdf',
+      image: {type:'jpeg', quality:.98},
+      html2canvas: {scale:2},
+      jsPDF: {unit:'mm', format:'a4', orientation:'portrait'}
+    }).from(document.getElementById('pdf-content')).save();
+  }
+</script>
+
+</body>
+</html>

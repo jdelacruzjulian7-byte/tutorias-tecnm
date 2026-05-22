@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PAT | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;}
+.badge.success{background:#ecfdf5;color:#16a34a;border:1.5px solid #bbf7d0;}
+.badge.danger{background:#fef2f2;color:#dc2626;border:1.5px solid #fecaca;}
+.badge.warn{background:#fffbeb;color:#d97706;border:1.5px solid #fde68a;}
+.badge.info{background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe;}
+.alert-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#15803d;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.tag-general{background:#dbeafe;color:#1e40af;border:1.5px solid #93c5fd;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700;}
+.tag-carrera{background:#f0fdf4;color:#15803d;border:1.5px solid #86efac;font-size:11px;padding:2px 8px;border-radius:6px;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Lista de PATs')}"></div>
+        <section class="card">
+            <div class="card-title">
+                PATs registrados
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/pats/nuevo}" class="btn btn-primary btn-sm">+ Nuevo PAT General</a>
+            </div>
+
+            <div th:if="${mensaje}" class="alert-success" th:text="${mensaje}"></div>
+
+            <div style="font-size:13px;color:#6b7280;margin-bottom:14px;">
+                <span class="tag-general">GENERAL</span> = PAT base sin carrera (Admin lo crea y aprueba). &nbsp;
+                <span class="tag-carrera">CARRERA</span> = PAT derivado, editable por coordinador.
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>#</th><th>Tipo</th><th>Versión</th><th>Carrera</th><th>Semestre</th><th>Estado</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${pats}">
+                            <td th:text="${p.id}">1</td>
+                            <td>
+                                <span th:if="${p.esGeneral}" class="tag-general">GENERAL</span>
+                                <span th:unless="${p.esGeneral}" class="tag-carrera">CARRERA</span>
+                            </td>
+                            <td th:text="${p.version ?: '-'}">v1</td>
+                            <td th:text="${p.carrera != null ? p.carrera.nombre : '— General —'}">-</td>
+                            <td th:text="${p.semestre != null ? p.semestre.nombre : '-'}">-</td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${p.estado == 'APROBADO'} ? ' success' : (${p.estado == 'RECHAZADO'} ? ' danger' : ' warn')"
+                                    th:text="${p.estado ?: 'PENDIENTE'}">PENDIENTE</span>
+                            </td>
+                            <td class="text-right">
+                                <a th:href="@{'/pats/detalle/' + ${p.id}}" class="btn btn-primary btn-sm">Ver</a>
+                                <!-- Asignar a carrera: solo si es General y está APROBADO -->
+                                <a sec:authorize="hasRole('ADMIN')"
+                                   th:if="${p.esGeneral and p.estado == 'APROBADO'}"
+                                   th:href="@{'/pats/asignar/' + ${p.id}}"
+                                   class="btn btn-secondary btn-sm" style="background:#1d4ed8;color:#fff;">
+                                   Asignar a carrera
+                                </a>
+                                <!-- Editar: Admin edita generales PENDIENTE/RECHAZADO; Coordinador edita los de carrera -->
+                                <a sec:authorize="hasRole('ADMIN')"
+                                   th:if="${p.esGeneral and p.estado != 'APROBADO'}"
+                                   th:href="@{'/pats/editar/' + ${p.id}}" class="btn btn-ghost btn-sm">Editar</a>
+                                <a sec:authorize="hasRole('COORDINADOR')"
+                                   th:if="${!p.esGeneral}"
+                                   th:href="@{'/pats/editar/' + ${p.id}}" class="btn btn-ghost btn-sm">Editar</a>
+                                <!-- Aprobar/Rechazar: solo Admin, solo generales PENDIENTE -->
+                                <form sec:authorize="hasRole('ADMIN')"
+                                      th:if="${p.esGeneral and p.estado == 'PENDIENTE'}"
+                                      th:action="@{'/pats/aprobar/' + ${p.id}}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-primary btn-sm" style="background:#16a34a;">✅ Aprobar</button>
+                                </form>
+                                <form sec:authorize="hasRole('ADMIN')"
+                                      th:if="${p.esGeneral and p.estado == 'PENDIENTE'}"
+                                      th:action="@{'/pats/rechazar/' + ${p.id}}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:#dc2626;">❌ Rechazar</button>
+                                </form>
+                                <!-- Eliminar: solo Admin -->
+                                <form sec:authorize="hasRole('ADMIN')"
+                                      th:action="@{'/pats/eliminar/' + ${p.id}}"
+                                      method="post" style="display:inline;"
+                                      onsubmit="return confirm('¿Eliminar este PAT?')">
+                                    <button type="submit" class="btn btn-ghost btn-sm">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${pats == null or #lists.isEmpty(pats)}">
+                            <td colspan="7" class="text-center text-muted" style="padding:40px;">
+                                No hay PATs registrados.<br/><br/>
+                                <a sec:authorize="hasRole('ADMIN')" th:href="@{/pats/nuevo}" class="btn btn-primary">+ Crear PAT General</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

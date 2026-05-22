@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tutores inactivos | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Tutores Inactivos')}"></div>
+        <section class="card">
+            <div class="card-title">
+                🔴 Tutores inactivos
+                <a th:href="@{/tutores}" class="btn btn-secondary btn-sm">← Volver a activos</a>
+            </div>
+            <div th:if="${#lists.isEmpty(tutores)}"
+                 style="text-align:center;padding:48px;color:#6b7280;">
+                No hay tutores inactivos.
+            </div>
+            <div th:unless="${#lists.isEmpty(tutores)}" class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Nombre</th><th>Carrera</th><th>Correo</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="t : ${tutores}">
+                            <td th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido} : '-'">-</td>
+                            <td th:text="${t.carrera != null ? t.carrera.nombre : '-'}">-</td>
+                            <td th:text="${t.usuario != null ? t.usuario.correo : '-'}">-</td>
+                            <td class="text-right">
+                                <form th:action="@{'/tutores/reactivar/' + ${t.id}}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-primary btn-sm">✅ Reactivar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

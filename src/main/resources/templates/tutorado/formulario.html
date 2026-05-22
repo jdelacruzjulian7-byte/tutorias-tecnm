@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tutorado | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${tutorado.id == null ? 'Nuevo tutorado' : 'Editar tutorado'})}"></div>
+
+        <section class="card" style="max-width:860px;">
+            <div class="card-title"
+                 th:text="${tutorado.id == null ? 'Registrar tutorado' : 'Editar tutorado'}">Tutorado</div>
+
+            <form th:action="@{/tutorados/guardar}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:if="${tutorado.id != null}" name="id" th:value="${tutorado.id}"/>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Alumno (usuario) *</label>
+                        <select name="usuarioId" class="form-input" required>
+                            <option value="">-- Selecciona --</option>
+                            <option th:each="u : ${usuarios}"
+                                    th:value="${u.id}"
+                                    th:text="${u.nombre + ' ' + u.apellido + ' (' + u.correo + ')'}"
+                                    th:selected="${tutorado.usuario != null and tutorado.usuario.id == u.id}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Matricula *</label>
+                        <input type="text" class="form-input" name="matricula"
+                               th:value="${tutorado.matricula}" required/>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Carrera *</label>
+                        <select name="carreraId" class="form-input" required>
+                            <option value="">-- Selecciona --</option>
+                            <option th:each="c : ${carreras}"
+                                    th:value="${c.id}"
+                                    th:text="${c.nombre}"
+                                    th:selected="${tutorado.carrera != null and tutorado.carrera.id == c.id}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Semestre de ingreso *</label>
+                        <input type="text" class="form-input" name="semestreIngreso"
+                               th:value="${tutorado.semestreIngreso}" placeholder="Ej. 2026-1" required/>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select name="activo" class="form-input">
+                            <option value="true" th:selected="${tutorado.activo}">Activo</option>
+                            <option value="false" th:selected="${!tutorado.activo}">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Foto (opcional)</label>
+                        <div th:if="${tutorado.foto != null}" style="margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+                            <img th:src="@{'/uploads/' + ${tutorado.foto}}"
+                                 style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #16a34a;"/>
+                            <span style="font-size:12px;color:#6b7280;">Foto actual</span>
+                        </div>
+                        <input type="file" name="archivoFoto" class="form-input" accept="image/*"/>
+                        <small style="color:#6b7280;font-size:11px;" th:if="${tutorado.foto != null}">
+                            Deja vacío para conservar la foto actual
+                        </small>
+                    </div>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <button type="submit" class="btn btn-primary">Guardar tutorado</button>
+                    <a th:href="@{/tutorados}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

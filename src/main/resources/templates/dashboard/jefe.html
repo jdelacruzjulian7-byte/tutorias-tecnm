@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panel Jefe Académico | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('jefe')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Panel Jefe Académico')}"></div>
+
+        <section class="hero">
+            <h1>Hola, <span th:text="${usuario != null} ? ${usuario.nombre} : 'jefe'">jefe</span></h1>
+            <p>Supervisas tutores, tutorados y asignaciones del semestre.</p>
+            <span class="hero-badge" th:if="${semestreActivo != null}"
+                  th:text="'Semestre activo: ' + ${semestreActivo.nombre}">Semestre</span>
+        </section>
+
+        <section class="stat-grid">
+            <div class="stat">
+                <div class="stat-label">Tutores activos</div>
+                <div class="stat-value accent" th:text="${tutoresCarrera}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Tutorados activos</div>
+                <div class="stat-value success" th:text="${tutoradosCarrera}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">PATs aprobados</div>
+                <div class="stat-value" th:text="${#lists.size(patsAprobados)}">0</div>
+            </div>
+        </section>
+
+        <!-- PATs (solo lectura) -->
+        <section class="card">
+            <div class="card-title">
+                PATs aprobados — Solo lectura
+                <a th:href="@{/pats}" class="btn btn-ghost btn-sm">Ver todos</a>
+            </div>
+            <div th:if="${#lists.isEmpty(patsAprobados)}"
+                 style="padding:24px;text-align:center;color:#6b7280;">
+                No hay PATs aprobados aún.
+            </div>
+            <div th:unless="${#lists.isEmpty(patsAprobados)}" class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Carrera</th><th>Versión</th><th>Semestre</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="p : ${patsAprobados}">
+                            <td th:text="${p.carrera != null ? p.carrera.nombre : '-'}">-</td>
+                            <td th:text="${p.version ?: '-'}">-</td>
+                            <td th:text="${p.semestre != null ? p.semestre.nombre : '-'}">-</td>
+                            <td>
+                                <!-- Jefe solo puede VER, no editar -->
+                                <a th:href="@{'/pats/detalle/' + ${p.id}}" class="btn btn-primary btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Acciones -->
+        <section class="card">
+            <div class="card-title">Acciones</div>
+            <div class="flex gap-12" style="flex-wrap:wrap;">
+                <a th:href="@{/asignaciones/nuevo}" class="btn btn-primary">+ Nueva asignación</a>
+                <a th:href="@{/asignaciones}" class="btn btn-secondary">Ver asignaciones</a>
+                <a th:href="@{/tutores}" class="btn btn-secondary">Ver tutores</a>
+                <a th:href="@{/tutorados}" class="btn btn-secondary">Ver tutorados</a>
+                <a th:href="@{/pats}" class="btn btn-secondary">Ver PATs</a>
+            </div>
+        </section>
+
+        <!-- Tutores -->
+        <section class="card">
+            <div class="card-title">Tutores activos</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Nombre</th><th>Carrera</th><th>Correo</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="t : ${tutores}">
+                            <td th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido} : '-'">-</td>
+                            <td th:text="${t.carrera != null ? t.carrera.nombre : '-'}">-</td>
+                            <td th:text="${t.usuario != null ? t.usuario.correo : '-'}">-</td>
+                            <td><a th:href="@{'/tutores/detalle/' + ${t.id}}" class="btn btn-ghost btn-sm">Ver</a></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tutores)}">
+                            <td colspan="4" class="text-center text-muted" style="padding:24px;">Sin tutores registrados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

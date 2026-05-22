@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panel Coordinador | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('coordinador')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Panel Coordinador de Tutorías')}"></div>
+
+        <section class="hero">
+            <h1>Hola, <span th:text="${usuario != null} ? ${usuario.nombre} : 'coordinador'">coordinador</span></h1>
+            <p>Gestiona el PAT de tu carrera y da seguimiento al programa de tutorías.</p>
+            <span class="hero-badge" th:if="${semestreActivo != null}"
+                  th:text="'Semestre activo: ' + ${semestreActivo.nombre}">Semestre</span>
+        </section>
+
+        <section class="stat-grid">
+            <div class="stat">
+                <div class="stat-label">Semanas completadas</div>
+                <div class="stat-value accent" th:text="${semanasCompletadas} + ' / 13'">0 / 13</div>
+                <div class="progress mt-8">
+                    <div class="progress-bar" th:style="'width:' + ${semanasCompletadas * 100 / 13} + '%;'"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">PATs de carrera</div>
+                <div class="stat-value" th:text="${#lists.size(pats)}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">PATs pendientes de revisión</div>
+                <div class="stat-value warn" th:text="${#lists.size(patsPendientes)}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Sesiones realizadas</div>
+                <div class="stat-value success" th:text="${totalSesiones}">0</div>
+            </div>
+        </section>
+
+        <!-- PATs por carrera -->
+        <section class="card">
+            <div class="card-title">
+                PATs por Carrera
+                <a th:href="@{/pats}" class="btn btn-ghost btn-sm">Ver todos</a>
+            </div>
+
+            <div th:if="${#lists.isEmpty(pats)}"
+                 style="text-align:center;padding:32px;color:#6b7280;">
+                No hay PATs de carrera asignados aún.
+                <br/><br/>
+                <a th:href="@{/pats}" class="btn btn-primary">Ir a PATs</a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(pats)}" class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Carrera</th><th>Versión</th><th>Estado</th><th>Semestre</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${pats}">
+                            <td th:text="${p.carrera != null ? p.carrera.nombre : '-'}">-</td>
+                            <td th:text="${p.version ?: '-'}">-</td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${p.estado == 'APROBADO'} ? ' success' : (${p.estado == 'RECHAZADO'} ? ' danger' : ' warn')"
+                                    th:text="${p.estado ?: 'PENDIENTE'}">-</span>
+                            </td>
+                            <td th:text="${p.semestre != null ? p.semestre.nombre : '-'}">-</td>
+                            <td class="text-right">
+                                <a th:href="@{'/pats/detalle/' + ${p.id}}" class="btn btn-primary btn-sm">Ver</a>
+                                <!-- Coordinador edita solo PATs PENDIENTE o APROBADO de carrera -->
+                                <a th:if="${p.estado != 'RECHAZADO'}"
+                                   th:href="@{'/pats/editar/' + ${p.id}}" class="btn btn-secondary btn-sm">Editar</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Acciones rápidas -->
+        <section class="card">
+            <div class="card-title">Acciones</div>
+            <div class="flex gap-12" style="flex-wrap:wrap;">
+                <a th:href="@{/pats}" class="btn btn-primary">📋 Ver PATs</a>
+                <a th:href="@{/sesiones}" class="btn btn-secondary">Ver sesiones</a>
+                <a th:href="@{/asistencias}" class="btn btn-secondary">Ver asistencias</a>
+                <a th:href="@{/tutorados}" class="btn btn-secondary">Ver tutorados</a>
+                <a th:href="@{/documentos}" class="btn btn-secondary">📄 Documentos</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Carreras | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Carreras')}"></div>
+
+        <section class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div class="card-title" style="margin-bottom:0;">Carreras registradas</div>
+                <a th:href="@{/carreras/nuevo}" class="btn btn-primary">+ Nueva carrera</a>
+            </div>
+
+            <div th:if="${carreras == null or #lists.isEmpty(carreras)}"
+                 class="text-muted" style="text-align:center; padding:32px 0;">
+                No hay carreras registradas aun.
+            </div>
+
+            <div th:if="${carreras != null and !#lists.isEmpty(carreras)}" class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${carreras}">
+                            <td th:text="${c.id}">1</td>
+                            <td th:text="${c.nombre}">Ingenieria en Sistemas</td>
+                            <td>
+                                <div class="flex gap-8">
+                                    <a th:href="@{/carreras/detalle/{id}(id=${c.id})}"
+                                       class="btn btn-secondary" style="padding:4px 12px; font-size:13px;">Ver</a>
+                                    <a th:href="@{/carreras/editar/{id}(id=${c.id})}"
+                                       class="btn btn-secondary" style="padding:4px 12px; font-size:13px;">Editar</a>
+                                    <a th:href="@{/carreras/eliminar/{id}(id=${c.id})}"
+                                       class="btn" style="padding:4px 12px; font-size:13px; background:var(--danger,#e74c3c); color:#fff;"
+                                       onclick="return confirm('¿Eliminar esta carrera?')">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

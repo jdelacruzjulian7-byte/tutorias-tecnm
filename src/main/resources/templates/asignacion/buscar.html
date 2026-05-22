@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Buscar asignaciones | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Buscar asignaciones')}"></div>
+
+        <section class="card" style="max-width:860px;">
+            <div class="card-title">Buscar por tutorado</div>
+
+            <form th:action="@{/asignaciones/buscar}" method="get" class="flex gap-12" style="margin-bottom:24px;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <select class="form-input" name="idTutorado">
+                        <option value="">-- Todos los tutorados --</option>
+                        <option th:each="t : ${tutorados}"
+                                th:value="${t.id}"
+                                th:selected="${t.id == idTutorado}"
+                                th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido + ' (' + t.matricula + ')'} : 'Tutorado #' + ${t.id}"></option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <a th:href="@{/asignaciones/buscar}" class="btn btn-secondary">Limpiar</a>
+            </form>
+
+            <div th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}"
+                 class="text-muted" style="text-align:center; padding:32px 0;">
+                No se encontraron asignaciones.
+            </div>
+
+            <div th:if="${asignaciones != null and !#lists.isEmpty(asignaciones)}" class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tutorado</th>
+                            <th>Matricula</th>
+                            <th>Tutor</th>
+                            <th>Semestre</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${asignaciones}">
+                            <td th:text="${a.id}">1</td>
+                            <td>
+                                <span th:if="${a.tutorado != null and a.tutorado.usuario != null}"
+                                      th:text="${a.tutorado.usuario.nombre + ' ' + a.tutorado.usuario.apellido}"></span>
+                                <span th:if="${a.tutorado == null}" class="text-muted">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${a.tutorado != null}" th:text="${a.tutorado.matricula}"></span>
+                                <span th:if="${a.tutorado == null}" class="text-muted">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${a.tutor != null and a.tutor.usuario != null}"
+                                      th:text="${a.tutor.usuario.nombre + ' ' + a.tutor.usuario.apellido}"></span>
+                                <span th:if="${a.tutor == null}" class="text-muted">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${a.semestre != null}" th:text="${a.semestre.nombre}"></span>
+                                <span th:if="${a.semestre == null}" class="text-muted">—</span>
+                            </td>
+                            <td>
+                                <span th:if="${a.activo}" style="color:#27ae60; font-weight:600;">✔ Activo</span>
+                                <span th:if="${!a.activo}" style="color:#e74c3c; font-weight:600;">✘ Inactivo</span>
+                            </td>
+                            <td>
+                                <div class="flex gap-8">
+                                    <a th:href="@{/asignaciones/detalle/{id}(id=${a.id})}"
+                                       class="btn btn-secondary" style="padding:4px 12px; font-size:13px;">Ver</a>
+                                    <a th:href="@{/asignaciones/editar/{id}(id=${a.id})}"
+                                       class="btn btn-secondary" style="padding:4px 12px; font-size:13px;">Editar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

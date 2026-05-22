@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usuarios | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<style>
+.badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.badge.admin {
+	background: #ede9fe;
+	color: #6d28d9;
+	border: 1.5px solid #c4b5fd;
+}
+
+.badge.tutor {
+	background: #eff6ff;
+	color: #1d4ed8;
+	border: 1.5px solid #bfdbfe;
+}
+
+.badge.tutorado {
+	background: #f0fdf4;
+	color: #15803d;
+	border: 1.5px solid #86efac;
+}
+
+.badge.coordinador {
+	background: #fdf4ff;
+	color: #7e22ce;
+	border: 1.5px solid #e9d5ff;
+}
+
+.badge.jefe {
+	background: #fff7ed;
+	color: #c2410c;
+	border: 1.5px solid #fed7aa;
+}
+
+.badge.subdirector {
+	background: #fef2f2;
+	color: #dc2626;
+	border: 1.5px solid #fecaca;
+}
+
+.alert-success {
+	background: #ecfdf5;
+	border: 1px solid #bbf7d0;
+	color: #15803d;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+
+.alert-error {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #dc2626;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+		<main class="main">
+			<div th:replace="~{fragments/layout :: topbar('Lista de Usuarios')}"></div>
+			<section class="card">
+				<div class="card-title">
+					Lista de usuarios
+					<div style="display: flex; gap: 8px;">
+						<a th:href="@{/usuarios/inactivos}" class="btn btn-ghost btn-sm"
+							th:if="${totalInactivos > 0}"
+							th:text="'Ver inactivos (' + ${totalInactivos} + ')'">Ver
+							inactivos</a> <a th:href="@{/usuarios/nuevo}"
+							class="btn btn-primary btn-sm">+ Nuevo usuario</a>
+					</div>
+				</div>
+
+				<div th:if="${msg}" class="alert-success" th:utext="${msg}"></div>
+				<div th:if="${error}" class="alert-error" th:utext="${error}"></div>
+
+				<div class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Nombre</th>
+								<th>Apellido</th>
+								<th>Correo</th>
+								<th>Rol</th>
+								<th>Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="u : ${usuarios}">
+								<td th:text="${u.id}">1</td>
+								<td th:text="${u.nombre}">-</td>
+								<td th:text="${u.apellido}">-</td>
+								<td th:text="${u.correo}">-</td>
+								<td><span class="badge" th:if="${u.rol != null}"
+									th:classappend="${u.rol.nombre.toLowerCase()}"
+									th:text="${u.rol.nombre}">-</span></td>
+								<td class="text-right"><a
+									th:href="@{'/usuarios/detalle/' + ${u.id}}"
+									class="btn btn-ghost btn-sm">Ver</a> <a
+									th:href="@{'/usuarios/editar/' + ${u.id}}"
+									class="btn btn-secondary btn-sm">Editar</a> <!-- Desactivar en lugar de eliminar -->
+									<form th:action="@{'/usuarios/desactivar/' + ${u.id}}"
+										method="post" style="display: inline;"
+										onsubmit="return confirm('¿Desactivar este usuario?')">
+										<button type="submit" class="btn btn-ghost btn-sm"
+											style="color: #d97706;">Desactivar</button>
+									</form> <!-- Eliminar permanente solo admin -->
+									<form th:action="@{'/usuarios/eliminar/' + ${u.id}}"
+										method="post" style="display: inline;"
+										onsubmit="return confirm('¿Eliminar PERMANENTEMENTE? Esta acción no se puede deshacer.')">
+										<button type="submit" class="btn btn-ghost btn-sm"
+											style="color: #dc2626;">Eliminar</button>
+									</form></td>
+							</tr>
+							<tr th:if="${usuarios == null or #lists.isEmpty(usuarios)}">
+								<td colspan="6" class="text-center text-muted"
+									style="padding: 40px;">No hay usuarios activos
+									registrados.<br />
+								<br /> <a th:href="@{/usuarios/nuevo}" class="btn btn-primary">+
+										Crear usuario</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

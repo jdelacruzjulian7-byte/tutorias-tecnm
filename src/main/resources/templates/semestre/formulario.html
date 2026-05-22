@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Semestre | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.alert-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#15803d;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.alert-error  {background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+
+.periodo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+.periodo-card {
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .15s;
+    user-select: none;
+}
+.periodo-card:hover { border-color: #4f46e5; background: #f8faff; }
+.periodo-card.selected { border-color: #4f46e5; background: #eef2ff; }
+.periodo-card input[type=radio] { display: none; }
+.periodo-card .periodo-icon { font-size: 28px; margin-bottom: 6px; }
+.periodo-card .periodo-label { font-weight: 700; font-size: 15px; color: #1e3a8a; }
+.periodo-card .periodo-meses { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+.anio-row { display: flex; align-items: center; gap: 12px; }
+.anio-btn  {
+    width: 36px; height: 36px;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    background: #fff; font-size: 18px; cursor: pointer; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s;
+}
+.anio-btn:hover { background: #f3f4f6; }
+.anio-display {
+    font-size: 22px; font-weight: 700; color: #1e3a8a;
+    min-width: 72px; text-align: center;
+}
+
+.preview-nombre {
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e3a8a;
+    text-align: center;
+    margin: 12px 0 20px;
+    transition: all .2s;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${semestre.id == null ? 'Nuevo semestre' : 'Editar semestre'})}"></div>
+
+        <section class="card" style="max-width:600px;">
+            <div class="card-title" th:text="${semestre.id == null ? 'Nuevo semestre' : 'Editar semestre'}">Semestre</div>
+
+            <div th:if="${msg}"   class="alert-success" th:utext="${msg}"></div>
+            <div th:if="${error}" class="alert-error"   th:utext="${error}"></div>
+
+            <form action="/semestres/guardar" method="post" onsubmit="return validar()">
+                <input type="hidden" name="id" th:value="${semestre.id}"/>
+
+                <!-- PERIODO -->
+                <div class="form-group">
+                    <label class="form-label">Periodo *</label>
+                    
+                    <!-- Input hidden que es el que realmente se envía -->
+                    <input type="hidden" name="periodo" id="periodoInput" 
+                           th:value="${semestre.periodo}" required/>
+                    
+                    <div class="periodo-grid">
+                        <div class="periodo-card" id="card-ene"
+                             th:classappend="${semestre.periodo == 'ENE_JUL'} ? ' selected' : ''"
+                             onclick="seleccionarPeriodo('ENE_JUL')">
+                            <div class="periodo-icon">🌸</div>
+                            <div class="periodo-label">Enero – Julio</div>
+                            <div class="periodo-meses">Semestre A (primavera)</div>
+                        </div>
+                        <div class="periodo-card" id="card-ago"
+                             th:classappend="${semestre.periodo == 'AGO_DIC'} ? ' selected' : ''"
+                             onclick="seleccionarPeriodo('AGO_DIC')">
+                            <div class="periodo-icon">🍂</div>
+                            <div class="periodo-label">Agosto – Diciembre</div>
+                            <div class="periodo-meses">Semestre B (otoño)</div>
+                        </div>
+                    </div>
+                    <div id="errorPeriodo" style="display:none; color:#dc2626; font-size:12px; margin-top:6px;">
+                        ⚠ Debes seleccionar un periodo.
+                    </div>
+                </div>
+
+                <!-- AÑO -->
+                <div class="form-group">
+                    <label class="form-label">Año *</label>
+                    <div class="anio-row">
+                        <button type="button" class="anio-btn" onclick="cambiarAnio(-1)">−</button>
+                        <div class="anio-display" id="anioDisplay"
+                             th:text="${semestre.anio != null ? semestre.anio : anioActual}">2025</div>
+                        <button type="button" class="anio-btn" onclick="cambiarAnio(+1)">+</button>
+                    </div>
+                    <input type="hidden" name="anio" id="anioInput"
+                           th:value="${semestre.anio != null ? semestre.anio : anioActual}"/>
+                </div>
+
+                <!-- PREVIEW nombre generado -->
+                <div class="preview-nombre" id="previewNombre">
+                    <!-- se actualiza con JS -->
+                </div>
+
+                <!-- FECHAS — con valor pre-cargado en edición -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Fecha de inicio</label>
+                        <input type="date" class="form-input" name="fechaInicio" id="fechaInicio"
+                               th:value="${semestre.fechaInicio}"/>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fecha de fin</label>
+                        <input type="date" class="form-input" name="fechaFin" id="fechaFin"
+                               th:value="${semestre.fechaFin}"/>
+                    </div>
+                </div>
+                <div id="errorFechas" style="display:none; color:#dc2626; font-size:12px; margin-top:-8px; margin-bottom:12px;">
+                    ⚠ La fecha de fin debe ser posterior a la de inicio.
+                </div>
+
+                <!-- ACTIVO -->
+                <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                        <input type="checkbox" name="activo" value="true"
+                               th:checked="${semestre.activo}"
+                               style="width:18px; height:18px; accent-color:#4f46e5;"/>
+                        <span>Marcar como semestre activo</span>
+                    </label>
+                    <small style="color:#6b7280; font-size:11px; margin-left:28px;">
+                        El semestre activo es el que se usa por defecto al crear asignaciones.
+                    </small>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${semestre.id == null ? 'Guardar semestre' : 'Actualizar semestre'}">Guardar</button>
+                    <a href="/semestres" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script th:inline="javascript">
+const periodoActual = /*[[${semestre.periodo}]]*/ null;
+const anioActual    = /*[[${semestre.anio != null ? semestre.anio : anioActual}]]*/ new Date().getFullYear();
+
+let periodoSel = periodoActual || null;
+let anio = parseInt(document.getElementById('anioInput').value) || new Date().getFullYear();
+
+function seleccionarPeriodo(p) {
+    periodoSel = p;
+    document.getElementById('card-ene').classList.toggle('selected', p === 'ENE_JUL');
+    document.getElementById('card-ago').classList.toggle('selected', p === 'AGO_DIC');
+    document.getElementById('periodoInput').value = p;
+    document.getElementById('errorPeriodo').style.display = 'none';
+    actualizarPreview();
+    autoFechas();
+}
+
+function cambiarAnio(delta) {
+    anio = Math.max(2000, Math.min(2100, anio + delta));
+    document.getElementById('anioDisplay').textContent = anio;
+    document.getElementById('anioInput').value = anio;
+    actualizarPreview();
+    autoFechas();
+}
+
+function actualizarPreview() {
+    const el = document.getElementById('previewNombre');
+    if (!periodoSel) { el.textContent = 'Selecciona periodo y año'; return; }
+    const label = periodoSel === 'ENE_JUL' ? 'Ene-Jul' : 'Ago-Dic';
+    el.textContent = '📅 ' + label + ' ' + anio;
+}
+
+// Sugerir fechas automáticamente si están vacías
+function autoFechas() {
+    const fi = document.getElementById('fechaInicio');
+    const ff = document.getElementById('fechaFin');
+    if (fi.value && ff.value) return; // no sobreescribir si ya tienen valor
+    if (!periodoSel) return;
+    if (periodoSel === 'ENE_JUL') {
+        if (!fi.value) fi.value = anio + '-01-08';
+        if (!ff.value) ff.value = anio + '-07-15';
+    } else {
+        if (!fi.value) fi.value = anio + '-08-11';
+        if (!ff.value) ff.value = anio + '-12-20';
+    }
+}
+
+function validar() {
+    if (!periodoSel) {
+        document.getElementById('errorPeriodo').style.display = 'block';
+        document.getElementById('card-ene').scrollIntoView({behavior:'smooth'});
+        return false;
+    }
+    const inicio = document.getElementById('fechaInicio').value;
+    const fin    = document.getElementById('fechaFin').value;
+    const err    = document.getElementById('errorFechas');
+    if (inicio && fin && fin <= inicio) {
+        err.style.display = 'block';
+        return false;
+    }
+    err.style.display = 'none';
+    return true;
+}
+
+// Init
+actualizarPreview();
+document.getElementById('fechaFin').addEventListener('change', validar);
+document.getElementById('fechaInicio').addEventListener('change', validar);
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalle tutorado | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Detalle de tutorado')}"></div>
+
+        <section class="card">
+            <div class="card-title">Datos del tutorado</div>
+
+            <!-- Foto -->
+            <div style="margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+                <img th:if="${tutorado.foto != null}"
+                     th:src="@{'/uploads/' + ${tutorado.foto}}"
+                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #16a34a;"/>
+                <div th:unless="${tutorado.foto != null}"
+                     style="width:80px;height:80px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:28px;"
+                     th:text="${tutorado.usuario != null} ? ${#strings.toUpperCase(#strings.substring(tutorado.usuario.nombre,0,1))} : '?'">?</div>
+                <div>
+                    <div style="font-size:20px;font-weight:700;"
+                         th:text="${tutorado.usuario != null} ? ${tutorado.usuario.nombre + ' ' + tutorado.usuario.apellido} : '-'">-</div>
+                    <div style="font-size:13px;color:#6b7280;"
+                         th:text="${tutorado.usuario != null} ? ${tutorado.usuario.correo} : '-'">-</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Matrícula</div>
+                    <div th:text="${tutorado.matricula}">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Carrera</div>
+                    <div th:text="${tutorado.carrera != null} ? ${tutorado.carrera.nombre} : '-'">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Semestre de ingreso</div>
+                    <div th:text="${tutorado.semestreIngreso}">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Estado</div>
+                    <span th:if="${tutorado.activo}" class="badge success">Activo</span>
+                    <span th:unless="${tutorado.activo}" class="badge danger">Inactivo</span>
+                </div>
+            </div>
+            <div class="flex gap-12 mt-16">
+                <a sec:authorize="hasAnyRole('ADMIN','JEFE')"
+                   th:href="@{'/tutorados/editar/' + ${tutorado.id}}" class="btn btn-primary">Editar</a>
+                <a th:href="@{/tutorados}" class="btn btn-secondary">Volver</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

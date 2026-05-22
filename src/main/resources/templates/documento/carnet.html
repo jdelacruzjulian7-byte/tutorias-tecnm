@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Carnet de Tutorado</title>
+<style>
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Helvetica Neue', Arial, sans-serif;
+	background: #f3f4f6;
+}
+
+.toolbar {
+	background: #1e3a8a;
+	padding: 14px 32px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 100;
+}
+
+.toolbar span {
+	color: #fff;
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.toolbar-btns {
+	display: flex;
+	gap: 10px;
+}
+
+.btn-imp {
+	background: #fff;
+	color: #1e3a8a;
+	border: none;
+	padding: 8px 20px;
+	border-radius: 8px;
+	font-weight: 700;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.btn-volver {
+	background: transparent;
+	color: #fff;
+	border: 1.5px solid #fff;
+	padding: 8px 20px;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 14px;
+	text-decoration: none;
+}
+
+.preview-wrap {
+	display: flex;
+	justify-content: center;
+	padding: 80px 20px 40px;
+}
+
+.doc {
+	background: #fff;
+	width: 148mm;
+	min-height: 210mm;
+	padding: 18mm 16mm;
+	box-shadow: 0 8px 40px rgba(0, 0, 0, .18);
+	border-radius: 4px;
+	position: relative;
+}
+
+.doc-header {
+	text-align: center;
+	border-bottom: 3px solid #1e3a8a;
+	padding-bottom: 12px;
+	margin-bottom: 16px;
+}
+
+.doc-header h2 {
+	font-size: 13px;
+	color: #1e3a8a;
+	font-weight: 800;
+	margin-bottom: 2px;
+}
+
+.doc-header p {
+	font-size: 10px;
+	color: #374151;
+	margin: 1px 0;
+}
+
+.doc-titulo {
+	font-size: 16px;
+	font-weight: 800;
+	color: #1e3a8a;
+	text-align: center;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	margin: 14px 0 18px;
+}
+
+.datos-tabla {
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 16px;
+}
+
+.datos-tabla td {
+	padding: 6px 8px;
+	font-size: 11px;
+	border-bottom: 1px solid #f3f4f6;
+}
+
+.datos-tabla td:first-child {
+	color: #4f46e5;
+	font-weight: 700;
+	width: 42%;
+	background: #f8faff;
+}
+
+.datos-tabla td:last-child {
+	color: #374151;
+}
+
+.asist-titulo {
+	font-size: 11px;
+	font-weight: 700;
+	color: #1e3a8a;
+	margin-bottom: 6px;
+}
+
+.asist-grid {
+	display: grid;
+	grid-template-columns: repeat(13, 1fr);
+	gap: 3px;
+	margin-bottom: 4px;
+}
+
+.asist-cab {
+	background: #4f46e5;
+	color: #fff;
+	font-size: 9px;
+	font-weight: 700;
+	text-align: center;
+	padding: 4px 2px;
+	border-radius: 4px 4px 0 0;
+}
+
+.asist-box {
+	border: 1.5px solid #e5e7eb;
+	height: 22px;
+	border-radius: 0 0 4px 4px;
+}
+
+.fecha-emision {
+	font-size: 10px;
+	color: #6b7280;
+	text-align: right;
+	margin-top: 10px;
+	margin-bottom: 20px;
+}
+
+.firmas {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 30px;
+	margin-top: 30px;
+}
+
+.firma {
+	text-align: center;
+}
+
+.firma-linea {
+	border-top: 1.5px solid #374151;
+	padding-top: 6px;
+	margin-top: 40px;
+}
+
+.firma-nombre {
+	font-size: 10px;
+	font-weight: 700;
+	color: #1e3a8a;
+}
+
+.firma-rol {
+	font-size: 9px;
+	color: #6b7280;
+	margin-top: 2px;
+}
+
+.sello {
+	position: absolute;
+	bottom: 20mm;
+	right: 14mm;
+	width: 55px;
+	height: 55px;
+	border: 3px solid #1e3a8a;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: .15;
+	font-size: 9px;
+	color: #1e3a8a;
+	font-weight: 700;
+	text-align: center;
+}
+
+@media print {
+	body {
+		background: #fff;
+	}
+	.toolbar {
+		display: none;
+	}
+	.preview-wrap {
+		padding: 0;
+	}
+	.doc {
+		box-shadow: none;
+		border-radius: 0;
+		width: 100%;
+		min-height: auto;
+	}
+}
+</style>
+</head>
+<body>
+
+	<div class="toolbar">
+		<span>Vista previa — Carnet de Tutorado</span>
+		<div class="toolbar-btns">
+			<a th:href="${urlVolver ?: '/documentos'}" class="btn-volver">← Volver</a>
+			<button class="btn-imp" onclick="window.print()">Imprimir /
+				Guardar PDF</button>
+		</div>
+	</div>
+
+	<div class="preview-wrap">
+		<div class="doc">
+
+			<div class="doc-header">
+				<h2>Tecnológico Nacional de México — Campus Chilpancingo</h2>
+				<p>Departamento de Desarrollo Académico</p>
+				<p>Programa Institucional de Tutoría</p>
+			</div>
+
+			<div class="doc-titulo">Carnet de Tutorado</div>
+
+			<table class="datos-tabla">
+				<tr>
+					<td>Nombre:</td>
+					<td
+						th:text="${usuario != null ? usuario.nombre + ' ' + usuario.apellido : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Correo:</td>
+					<td th:text="${usuario != null ? usuario.correo : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Matrícula:</td>
+					<td th:text="${tutorado != null ? tutorado.matricula : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Carrera:</td>
+					<td
+						th:text="${tutorado != null and tutorado.carrera != null ? tutorado.carrera.nombre : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Semestre de ingreso:</td>
+					<td th:text="${tutorado != null ? tutorado.semestreIngreso : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Semestre activo:</td>
+					<td th:text="${semestre != null ? semestre.nombre : '—'}">—</td>
+				</tr>
+				<tr>
+					<td>Tutor asignado:</td>
+					<td
+						th:text="${tutor != null and tutor.usuario != null ? tutor.usuario.nombre + ' ' + tutor.usuario.apellido : 'Sin asignar'}">—</td>
+				</tr>
+			</table>
+
+			<div class="asist-titulo">Registro de Asistencias (13 sesiones)</div>
+			<div class="asist-grid">
+				<div class="asist-cab" th:each="n : ${#numbers.sequence(1,13)}"
+					th:text="'S' + ${n}"></div>
+			</div>
+			<div class="asist-grid">
+				<div class="asist-box" th:each="n : ${#numbers.sequence(1,13)}"></div>
+			</div>
+
+			<div class="fecha-emision">
+				<span th:if="${fechaLarga != null}"
+					th:text="${'Fecha de emisión: ' + fechaLarga}"></span>
+			</div>
+
+			<!-- CORRECCIÓN: Las dos firmas son hermanas dentro de .firmas, no anidadas -->
+			<div class="firmas">
+
+				<!-- Firma 1: Tutor -->
+				<div class="firma">
+					<div class="firma-linea">
+						<div class="firma-nombre">
+							<span th:if="${tutor != null and tutor.usuario != null}"
+								th:text="${tutor.usuario.nombre + ' ' + tutor.usuario.apellido}"></span>
+							<span th:if="${tutor == null or tutor.usuario == null}">________________________________</span>
+						</div>
+						<div class="firma-rol">Tutor(a)</div>
+					</div>
+				</div>
+
+				<!-- Firma 2: Subdirector -->
+				<div class="firma">
+					<div class="firma-linea">
+						<div class="firma-nombre">
+							<span th:if="${subdirector != null}"
+								th:text="${subdirector.nombre + ' ' + subdirector.apellido}"></span>
+							<span th:if="${subdirector == null}">________________________________</span>
+						</div>
+						<div class="firma-rol">Subdirector(a) Académico(a)</div>
+					</div>
+				</div>
+
+			</div>
+			<!-- FIN .firmas -->
+
+			<!-- CORRECCIÓN: El sello va fuera del grid .firmas, dentro de .doc (position: absolute) -->
+			<div class="sello">TecNM</div>
+
+		</div>
+		<!-- FIN .doc -->
+	</div>
+	<!-- FIN .preview-wrap -->
+
+</body>
+</html>

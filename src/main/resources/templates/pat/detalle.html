@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Detalle del PAT | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<style>
+.pat-header {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 18px;
+	background: linear-gradient(135deg, #f0f4ff, #e0e7ff);
+	border: 1px solid #c7d2fe;
+	border-radius: 14px;
+	padding: 22px;
+	margin-bottom: 22px;
+}
+
+.info-block .label {
+	font-size: 11px;
+	color: #4f46e5;
+	text-transform: uppercase;
+	letter-spacing: .08em;
+	font-weight: 700;
+}
+
+.info-block .value {
+	margin-top: 4px;
+	font-size: 17px;
+	font-weight: 600;
+	color: #1e3a8a;
+}
+
+.badge {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.badge.success {
+	background: #ecfdf5;
+	color: #16a34a;
+	border: 1.5px solid #bbf7d0;
+}
+
+.badge.warn {
+	background: #fffbeb;
+	color: #d97706;
+	border: 1.5px solid #fde68a;
+}
+
+.badge.danger {
+	background: #fef2f2;
+	color: #dc2626;
+	border: 1.5px solid #fecaca;
+}
+
+.semana-pill {
+	display: inline-block;
+	background: #4f46e5;
+	color: #fff;
+	padding: 4px 12px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 700;
+	min-width: 60px;
+	text-align: center;
+}
+
+.tipo-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 6px;
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.tipo-INFORMACION {
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
+.tipo-FORMACION {
+	background: #f0fdf4;
+	color: #15803d;
+}
+
+.tipo-ORIENTACION {
+	background: #fdf4ff;
+	color: #7e22ce;
+}
+
+.empty-state {
+	padding: 48px 16px;
+	text-align: center;
+	color: #6b7280;
+	background: #fafbff;
+	border-radius: 12px;
+	border: 2px dashed #c7d2fe;
+}
+
+.empty-state h3 {
+	margin: 0 0 8px;
+	color: #1e3a8a;
+	font-size: 18px;
+}
+
+.btn-print {
+	background: #1e3a8a;
+	color: #fff;
+	border: none;
+	cursor: pointer;
+}
+
+.btn-print:hover {
+	background: #1e40af;
+}
+
+/* ── Solo en pantalla: ocultar elementos de impresión ── */
+.print-only {
+	display: none;
+}
+
+/* ── Estilos de impresión ── */
+@media print {
+	.layout {
+		display: block !important;
+	}
+	.sidebar, .topbar, .no-print {
+		display: none !important;
+	}
+	.main {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+	.card {
+		box-shadow: none !important;
+		border: none !important;
+		padding: 0 !important;
+	}
+	.print-only {
+		display: block !important;
+	}
+	.print-header {
+		display: flex !important;
+		align-items: center;
+		justify-content: center;
+		border-bottom: 3px solid #1e3a8a;
+		padding-bottom: 14px;
+		margin-bottom: 20px;
+		text-align: center;
+	}
+	.print-header h2 {
+		font-size: 14px;
+		font-weight: 700;
+		color: #1e3a8a;
+		margin: 0 0 4px;
+	}
+	.print-header p {
+		font-size: 11px;
+		color: #374151;
+		margin: 2px 0;
+	}
+	.print-header .pat-title {
+		font-size: 16px;
+		font-weight: 800;
+		color: #1e3a8a;
+		margin: 8px 0 4px;
+		text-transform: uppercase;
+		letter-spacing: .05em;
+	}
+	.print-table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 16px;
+		font-size: 10.5px;
+	}
+	.print-table th {
+		background: #1e3a8a !important;
+		color: #fff !important;
+		padding: 8px 6px;
+		text-align: left;
+		font-size: 11px;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+	.print-table td {
+		padding: 6px 5px;
+		border-bottom: 1px solid #e5e7eb;
+		vertical-align: top;
+		line-height: 1.4;
+	}
+	.print-table tr:nth-child(even) td {
+		background: #f8faff !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+	.semana-pill {
+		background: #1e3a8a !important;
+		color: #fff !important;
+		padding: 2px 8px;
+		border-radius: 999px;
+		font-size: 10px;
+		font-weight: 700;
+		display: inline-block;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+	.print-firmas {
+		display: grid !important;
+		grid-template-columns: 1fr 1fr 1fr;
+		gap: 40px;
+		margin-top: 70px;
+		text-align: center;
+	}
+	.firma-linea {
+		border-top: 1px solid #374151;
+		padding-top: 8px;
+		font-size: 11px;
+		color: #374151;
+	}
+	.firma-nombre {
+		font-weight: 700;
+		margin-bottom: 4px;
+		font-size: 11px;
+	}
+}
+</style>
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+		<main class="main">
+			<div th:replace="~{fragments/layout :: topbar('Detalle del PAT')}"></div>
+
+			<!-- ═══════════════════════════════════════════
+             SECCIÓN DE IMPRESIÓN (solo visible al imprimir)
+        ═══════════════════════════════════════════ -->
+			<div class="print-only" style="padding: 0 20px;">
+
+				<!-- Encabezado institucional -->
+				<div class="print-header">
+					<div>
+						<h2>Tecnológico Nacional de México — Campus Chilpancingo</h2>
+						<p>Departamento de Desarrollo Académico — Programa
+							Institucional de Tutoría</p>
+						<div class="pat-title">Programa de Acción Tutorial (PAT)</div>
+						<p>
+							<strong>Carrera:</strong> <span
+								th:text="${pat.carrera != null ? pat.carrera.nombre : '—'}"></span>
+							&nbsp;&nbsp;|&nbsp;&nbsp; <strong>Semestre:</strong> <span
+								th:text="${pat.semestre != null ? pat.semestre.nombre : '—'}"></span>
+							&nbsp;&nbsp;|&nbsp;&nbsp; <strong>Versión:</strong> <span
+								th:text="${pat.semestre != null ? pat.semestre.nombre : '—'}"></span>
+							&nbsp;&nbsp;|&nbsp;&nbsp; <strong>Estado:</strong> <span
+								th:text="${pat.estado ?: 'PENDIENTE'}"></span>
+						</p>
+					</div>
+				</div>
+
+				<!-- Tabla del PAT para imprimir -->
+				<table class="print-table">
+					<thead>
+						<tr>
+							<th style="width: 50px; text-align: center;">Sem.</th>
+							<th style="width: 70px;">Fecha</th>
+							<th style="width: 180px;">Tema / Actividad</th>
+							<th>Objetivo</th>
+							<th style="width: 100px;">Ponente</th>
+							<th style="width: 75px;">Tipo</th>
+							<th>Recursos / Materiales</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="a : ${actividades}">
+							<td style="text-align: center;"><span class="semana-pill"
+								th:text="${a.semana != null ? a.semana : '-'}"></span></td>
+							<td
+								th:text="${a.fecha != null} ? ${#temporals.format(a.fecha,'dd/MM/yy')} : '—'"></td>
+							<td th:text="${a.tema ?: '—'}"></td>
+							<td th:text="${a.objetivo ?: '—'}"></td>
+							<td th:text="${a.ponente ?: '—'}"></td>
+							<td th:text="${a.tipo ?: '—'}"></td>
+							<td th:text="${a.recursos ?: '—'}"></td>
+						</tr>
+						<tr th:if="${#lists.isEmpty(actividades)}">
+							<td colspan="7"
+								style="text-align: center; color: #9ca3af; padding: 20px;">
+								Sin actividades registradas</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<!-- Firmas -->
+				<div class="print-firmas">
+					<div>
+						<div class="firma-nombre">Coordinador(a) de Tutoría</div>
+						<div style="height: 50px;"></div>
+						<div class="firma-linea"
+							th:text="${pat.carrera != null ? pat.carrera.nombre : ''}">
+						</div>
+					</div>
+					<div>
+						<div class="firma-nombre">Jefe(a) Académico(a)</div>
+						<div style="height: 50px;"></div>
+						<div class="firma-linea">Carrera</div>
+					</div>
+					<div>
+						<div class="firma-nombre">Subdirector(a) Académico(a)</div>
+						<div style="height: 50px;"></div>
+						<div class="firma-linea">TecNM Campus Chilpancingo</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- ═══════════════════════════════════════════
+             SECCIÓN DE PANTALLA
+        ═══════════════════════════════════════════ -->
+
+			<!-- Info del PAT -->
+			<section class="card no-print">
+				<div class="card-title">
+					<span>Plan de Acción Tutorial</span>
+					<div
+						style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+						<button onclick="window.print()" class="btn btn-print">🖨️
+							Imprimir PAT</button>
+						<!-- Aprobar / Rechazar / Reabrir - solo Admin en PAT General -->
+				<form th:if="${pat.esGeneral and pat.estado == 'PENDIENTE'}"
+				      th:action="@{'/pats/aprobar/' + ${pat.id}}" method="post" style="display:inline;">
+				    <button type="submit" class="btn btn-primary" style="background:#16a34a;">✅ Aprobar PAT</button>
+				</form>
+				<form th:if="${pat.esGeneral and pat.estado == 'PENDIENTE'}"
+				      th:action="@{'/pats/rechazar/' + ${pat.id}}" method="post" style="display:inline;">
+				    <button type="submit" class="btn btn-ghost" style="color:#dc2626;" onclick="return confirm('¿Rechazar este PAT?')">❌ Rechazar</button>
+				</form>
+				<form th:if="${pat.esGeneral and pat.estado == 'RECHAZADO'}"
+				      th:action="@{'/pats/reabrir/' + ${pat.id}}" method="post" style="display:inline;">
+				    <button type="submit" class="btn btn-secondary">🔄 Reabrir para edición</button>
+				</form>
+				<a th:if="${puedeAsignar}"
+					th:href="@{/pats/asignar/{id}(id=${pat.id})}"
+					class="btn btn-primary" style="background:#1d4ed8;">
+					&#128196; Asignar a carrera</a>
+				<a th:if="${puedeEditar}"
+							th:href="@{/pats/editar/{id}(id=${pat.id})}"
+							class="btn btn-secondary">✏️ Editar PAT</a> <a th:href="@{/pats}"
+							class="btn btn-secondary">← Volver</a>
+					</div>
+				</div>
+
+				<div class="pat-header">
+					
+					<div class="info-block">
+						<div class="label">Estado</div>
+						<div class="value">
+							<span class="badge"
+								th:classappend="${pat.estado == 'APROBADO'} ? ' success' :
+                                             (${pat.estado == 'RECHAZADO'} ? ' danger' : ' warn')"
+								th:text="${pat.estado ?: 'PENDIENTE'}">PENDIENTE</span>
+						</div>
+					</div>
+					<div class="info-block">
+						<div class="label">Carrera</div>
+						<div class="value"
+							th:text="${pat.carrera != null ? pat.carrera.nombre : 'Sin carrera'}">—</div>
+					</div>
+					<div class="info-block">
+						<div class="label">Semestre</div>
+						<div class="value"
+							th:text="${pat.semestre != null ? pat.semestre.nombre : '—'}">—</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Cronograma -->
+			<section class="card no-print">
+				<div class="card-title">
+					<span> Cronograma semanal &nbsp;·&nbsp; <span
+						th:text="${#lists.size(actividades)}">0</span> actividades
+					</span> <a th:if="${puedeEditar}"
+						th:href="@{/actividades/nuevo(patId=${pat.id})}"
+						class="btn btn-primary">+ Nueva actividad</a>
+				</div>
+
+				<!-- Sin actividades -->
+				<div th:if="${#lists.isEmpty(actividades)}" class="empty-state">
+					<h3>Aún no hay actividades en este PAT</h3>
+					<p>Agrega las 13 semanas de actividades del plan tutorial.</p>
+					<a th:if="${puedeEditar}"
+						th:href="@{/actividades/nuevo(patId=${pat.id})}"
+						class="btn btn-primary" style="margin-top: 14px;">+ Agregar
+						primera actividad</a>
+				</div>
+
+				<!-- Tabla de actividades -->
+				<div th:unless="${#lists.isEmpty(actividades)}" class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th style="width: 80px;">Semana</th>
+								<th style="width: 95px;">Fecha</th>
+								<th>Tema</th>
+								<th>Objetivo</th>
+								<th style="width: 110px;">Ponente</th>
+								<th style="width: 90px;">Tipo</th>
+								<th>Recursos</th>
+								<th th:if="${puedeEditar}" class="text-right">Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="a : ${actividades}">
+								<td><span class="semana-pill"
+									th:text="${a.semana != null ? 'Sem ' + a.semana : '—'}">Sem
+										1</span></td>
+								<td
+									th:text="${a.fecha != null} ? ${#temporals.format(a.fecha,'dd/MM/yyyy')} : '—'">—</td>
+								<td style="font-weight: 600;" th:text="${a.tema ?: '—'}">—</td>
+								<td style="font-size: 13px; color: #6b7280;"
+									th:text="${a.objetivo ?: '—'}">—</td>
+								<td th:text="${a.ponente ?: '—'}">—</td>
+								<td><span class="tipo-badge"
+									th:classappend="${'tipo-' + (a.tipo ?: 'INFORMACION')}"
+									th:text="${a.tipo ?: '—'}">—</span></td>
+								<td style="font-size: 13px;" th:text="${a.recursos ?: '—'}">—</td>
+								<td th:if="${puedeEditar}" class="text-right"><a
+									th:href="@{/actividades/editar/{id}(id=${a.id})}"
+									class="btn btn-secondary btn-sm">Editar</a> <a
+									th:href="@{/actividades/eliminar/{id}(id=${a.id})}"
+									class="btn btn-danger btn-sm"
+									onclick="return confirm('¿Eliminar esta actividad?');">Eliminar</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+		</main>
+	</div>
+</body>
+</html>

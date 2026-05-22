@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Oficio de Término de Tutoría</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Helvetica Neue', Arial, sans-serif; background:#f3f4f6; }
+        .toolbar { background:#1e3a8a; padding:14px 32px; display:flex; align-items:center; justify-content:space-between; position:fixed; top:0; width:100%; z-index:100; }
+        .toolbar span { color:#fff; font-size:15px; font-weight:600; }
+        .toolbar-btns { display:flex; gap:10px; }
+        .btn-imp { background:#fff; color:#1e3a8a; border:none; padding:8px 20px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; }
+        .btn-volver { background:transparent; color:#fff; border:1.5px solid #fff; padding:8px 20px; border-radius:8px; font-weight:600; cursor:pointer; font-size:14px; text-decoration:none; }
+        .preview-wrap { display:flex; justify-content:center; padding:80px 20px 40px; }
+        .doc { background:#fff; width:216mm; min-height:279mm; padding:20mm 22mm; box-shadow:0 8px 40px rgba(0,0,0,.18); border-radius:4px; position:relative; }
+        .doc-header { text-align:center; border-bottom:3px solid #1e3a8a; padding-bottom:14px; margin-bottom:16px; }
+        .doc-header h2 { font-size:14px; color:#1e3a8a; font-weight:800; margin-bottom:3px; }
+        .doc-header p { font-size:11px; color:#374151; margin:2px 0; }
+        .no-oficio { font-size:11px; color:#6b7280; text-align:right; margin-bottom:16px; }
+        .doc-titulo { font-size:18px; font-weight:800; color:#1e3a8a; text-align:center; text-transform:uppercase; letter-spacing:.06em; margin:14px 0 22px; }
+        .cuerpo { font-size:12px; color:#374151; line-height:2.1; text-align:justify; margin-bottom:20px; }
+        .cuerpo strong { color:#1e3a8a; }
+        .pct-apto { display:flex; align-items:center; gap:12px; background:#ecfdf5; border:2px solid #16a34a; border-radius:10px; padding:12px 20px; margin:20px 0; }
+        .pct-apto .pct-num { font-size:26px; font-weight:800; color:#16a34a; }
+        .pct-apto .pct-desc { font-size:11px; color:#374151; }
+        .lugar-fecha { font-size:11px; color:#6b7280; text-align:right; margin:20px 0 10px; }
+        .firmas { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:50px; }
+        .firma { text-align:center; }
+        .firma-linea { border-top:1.5px solid #374151; padding-top:6px; margin-top:50px; }
+        .firma-nombre { font-size:11px; font-weight:700; color:#1e3a8a; }
+        .firma-rol { font-size:10px; color:#6b7280; margin-top:2px; }
+        .sello { position:absolute; bottom:22mm; right:18mm; width:60px; height:60px; border:3px solid #1e3a8a; border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:.12; font-size:9px; color:#1e3a8a; font-weight:700; text-align:center; }
+        @media print { body { background:#fff; } .toolbar { display:none; } .preview-wrap { padding:0; } .doc { box-shadow:none; border-radius:0; width:100%; min-height:auto; } }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <span>Vista previa — Oficio de Término de Tutoría</span>
+    <div class="toolbar-btns">
+        <a th:href="@{/documentos}" class="btn-volver">Volver</a>
+        <button class="btn-imp" onclick="window.print()">Imprimir / Guardar PDF</button>
+    </div>
+</div>
+
+<div class="preview-wrap">
+    <div class="doc">
+        <div class="doc-header">
+            <h2>Tecnológico Nacional de México — Campus Chilpancingo</h2>
+            <p>Departamento de Desarrollo Académico</p>
+            <p>Programa Institucional de Tutoría</p>
+        </div>
+
+        <div th:with="
+            nombreSemestre=${semestre != null ? semestre.nombre : '-'},
+            matriculaTutorado=${tutorado != null ? tutorado.matricula : '000'},
+            nombreUsuario=${usuario != null ? usuario.nombre : '-'},
+            apellidoUsuario=${usuario != null ? usuario.apellido : ''},
+            carreraTutorado=${tutorado != null and tutorado.carrera != null ? tutorado.carrera.nombre : '-'},
+            nombreTutor=${tutor != null and tutor.usuario != null ? tutor.usuario.nombre : '-'},
+            apellidoTutor=${tutor != null and tutor.usuario != null ? tutor.usuario.apellido : ''},
+            nombreSubdirector=${subdirector != null ? subdirector.nombre : '-'},
+            apellidoSubdirector=${subdirector != null ? subdirector.apellido : ''},
+            pctTexto=${porcentaje != null ? #numbers.formatDecimal(porcentaje, 1, 1) : '0'}
+        ">
+            <div class="no-oficio">
+                No. Oficio: DAT-<span th:text="${nombreSemestre}">-</span>-<span th:text="${matriculaTutorado}">000</span>
+            </div>
+
+            <div class="doc-titulo">Oficio de Término de Tutoría</div>
+
+            <p class="cuerpo">
+                Por medio del presente, el Departamento de Desarrollo Académico del
+                Tecnológico Nacional de México Campus Chilpancingo, hace constar que el(la) alumno(a)
+                <strong>
+                    <span th:text="${nombreUsuario}">-</span>
+                    <span th:text="${apellidoUsuario}">-</span>
+                </strong>
+                con matrícula
+                <strong th:text="${matriculaTutorado}">-</strong>
+                de la carrera de
+                <strong th:text="${carreraTutorado}">-</strong>,
+                ha concluido satisfactoriamente el Programa Institucional de Tutoría
+                correspondiente al semestre
+                <strong th:text="${nombreSemestre}">-</strong>,
+                cumpliendo con el porcentaje mínimo de asistencia requerido del 80%,
+                bajo la tutoría del(la) docente
+                <strong>
+                    <span th:text="${nombreTutor}">-</span>
+                    <span th:text="${apellidoTutor}">-</span>
+                </strong>.
+                <br/><br/>
+                Se expide el presente oficio para los fines que al interesado convengan,
+                a petición del alumno y con el visto bueno de las autoridades correspondientes.
+            </p>
+
+            <div class="pct-apto">
+                <div class="pct-num"><span th:text="${pctTexto}">0</span>%</div>
+                <div class="pct-desc">
+                    Porcentaje de asistencia alcanzado<br/>
+                    <strong>Cumple con el mínimo requerido (80%)</strong>
+                </div>
+            </div>
+
+            <div class="lugar-fecha">
+                Chilpancingo, Guerrero, a <span th:text="${fechaLarga != null ? fechaLarga : '-'}">-</span>
+            </div>
+
+            <div class="firmas">
+                <div class="firma">
+                    <div class="firma-linea">
+                        <div class="firma-nombre">
+                            <span th:text="${nombreTutor}">-</span>
+                            <span th:text="${apellidoTutor}">-</span>
+                        </div>
+                        <div class="firma-rol">Tutor(a) Asignado(a)</div>
+                    </div>
+                </div>
+                <div class="firma">
+                    <div class="firma-linea">
+                        <div class="firma-nombre">
+                            <span th:text="${nombreSubdirector}">-</span>
+                            <span th:text="${apellidoSubdirector}">-</span>
+                        </div>
+                        <div class="firma-rol">Subdirector(a) Académico(a)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sello">TecNM</div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema de Tutorías | TecNM Campus Chilpancingo</title>
+<style>
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Helvetica Neue', Arial, sans-serif;
+	background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+/* ── Navbar ── */
+.navbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 18px 48px;
+	background: rgba(255, 255, 255, .06);
+	backdrop-filter: blur(10px);
+	border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.navbar-brand {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.brand-icon {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	background: #4f46e5;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 22px;
+	font-weight: 800;
+}
+
+.brand-text h1 {
+	font-size: 18px;
+	font-weight: 700;
+	color: #fff;
+}
+
+.brand-text p {
+	font-size: 12px;
+	color: rgba(255, 255, 255, .6);
+}
+
+.navbar-login {
+	background: #fff;
+	color: #1e3a8a;
+	padding: 10px 24px;
+	border-radius: 10px;
+	font-weight: 700;
+	font-size: 14px;
+	text-decoration: none;
+	transition: all .2s;
+}
+
+.navbar-login:hover {
+	background: #e0e7ff;
+}
+
+/* ── Hero ── */
+.hero {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 60px 48px;
+	text-align: center;
+}
+
+.hero-content {
+	max-width: 720px;
+}
+
+.hero-badge {
+	display: inline-block;
+	background: rgba(79, 70, 229, .3);
+	color: #c7d2fe;
+	border: 1px solid rgba(199, 210, 254, .3);
+	padding: 6px 18px;
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 600;
+	margin-bottom: 24px;
+}
+
+.hero h2 {
+	font-size: 52px;
+	font-weight: 800;
+	color: #fff;
+	line-height: 1.15;
+	margin-bottom: 20px;
+}
+
+.hero h2 span {
+	color: #818cf8;
+}
+
+.hero p {
+	font-size: 18px;
+	color: rgba(255, 255, 255, .7);
+	line-height: 1.7;
+	margin-bottom: 36px;
+	max-width: 560px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.hero-btns {
+	display: flex;
+	gap: 16px;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.btn-primary-hero {
+	background: #fff;
+	color: #1e3a8a;
+	padding: 14px 32px;
+	border-radius: 12px;
+	font-weight: 700;
+	font-size: 16px;
+	text-decoration: none;
+	transition: all .2s;
+}
+
+.btn-primary-hero:hover {
+	background: #e0e7ff;
+	transform: translateY(-2px);
+}
+
+.btn-ghost-hero {
+	background: rgba(255, 255, 255, .1);
+	color: #fff;
+	border: 1.5px solid rgba(255, 255, 255, .25);
+	padding: 14px 32px;
+	border-radius: 12px;
+	font-weight: 600;
+	font-size: 16px;
+	text-decoration: none;
+	transition: all .2s;
+}
+
+.btn-ghost-hero:hover {
+	background: rgba(255, 255, 255, .2);
+}
+
+/* ── Cards info ── */
+.info-section {
+	padding: 60px 48px;
+	background: rgba(0, 0, 0, .2);
+}
+
+.info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 20px;
+	max-width: 1000px;
+	margin: 0 auto;
+}
+
+.info-card {
+	background: rgba(255, 255, 255, .07);
+	border: 1px solid rgba(255, 255, 255, .1);
+	border-radius: 16px;
+	padding: 28px 24px;
+	text-align: center;
+	transition: all .2s;
+}
+
+.info-card:hover {
+	background: rgba(255, 255, 255, .12);
+	transform: translateY(-3px);
+}
+
+.info-icon {
+	font-size: 36px;
+	margin-bottom: 12px;
+}
+
+.info-card h3 {
+	font-size: 16px;
+	font-weight: 700;
+	color: #fff;
+	margin-bottom: 8px;
+}
+
+.info-card p {
+	font-size: 13px;
+	color: rgba(255, 255, 255, .6);
+	line-height: 1.6;
+}
+
+/* ── Semestre activo ── */
+.semestre-banner {
+	margin: 0 48px 40px;
+	background: rgba(79, 70, 229, .2);
+	border: 1px solid rgba(99, 102, 241, .4);
+	border-radius: 12px;
+	padding: 14px 24px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	max-width: 1000px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 32px;
+}
+
+.semestre-banner span {
+	font-size: 13px;
+	color: #c7d2fe;
+}
+
+.semestre-banner strong {
+	color: #fff;
+}
+
+/* ── Footer ── */
+footer {
+	text-align: center;
+	padding: 20px;
+	color: rgba(255, 255, 255, .4);
+	font-size: 12px;
+	border-top: 1px solid rgba(255, 255, 255, .08);
+}
+</style>
+</head>
+<body>
+
+	<!-- Navbar -->
+	<nav class="navbar">
+		<div class="navbar-brand">
+			<div class="brand-icon">T</div>
+			<div class="brand-text">
+				<h1>Sistema de Tutorías</h1>
+				<p>TecNM Campus Chilpancingo</p>
+			</div>
+		</div>
+	</nav>
+
+	<!-- Hero -->
+	<section class="hero">
+		<div class="hero-content">
+			<div class="hero-badge">🎓 Programa Institucional de Tutoría —
+				TecNM</div>
+			<h2>
+				Bienvenido al <span>Sistema de Tutorías</span>
+			</h2>
+			<p>Plataforma de gestión del Programa de Acción Tutorial del
+				Tecnológico Nacional de México Campus Chilpancingo.</p>
+
+			<div class="semestre-banner" th:if="${semestreActivo != null}"
+				style="text-align: center;">
+				<span>📅 Semestre activo:</span> <strong
+					th:text="${semestreActivo.nombre}">—</strong>
+			</div>
+
+			<div class="hero-btns">
+				<a th:href="@{/login}" class="btn-primary-hero">Iniciar sesión</a>
+			</div>
+		</div>
+	</section>
+
+	<!-- Info cards -->
+	<section class="info-section" id="info">
+		<div class="info-grid">
+			<div class="info-card">
+				<div class="info-icon">📋</div>
+				<h3>Programa de Acción Tutorial</h3>
+				<p>13 sesiones semanales planificadas por carrera y semestre con
+					actividades de formación integral.</p>
+			</div>
+			<div class="info-card">
+				<div class="info-icon">✅</div>
+				<h3>Control de Asistencias</h3>
+				<p>Registro de asistencia por sesión. Cálculo automático del
+					porcentaje acumulado por alumno.</p>
+			</div>
+			<div class="info-card">
+				<div class="info-icon">📄</div>
+				<h3>Documentos Oficiales</h3>
+				<p>Generación de carnet, constancia de asistencia y oficio de
+					término al alcanzar el 80%.</p>
+			</div>
+			<div class="info-card">
+				<div class="info-icon">👥</div>
+				<h3>Gestión por Roles</h3>
+				<p>Acceso diferenciado para admin, coordinador, jefe académico,
+					tutor, tutorado y subdirector.</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Footer -->
+	<footer> © 2026 Tecnológico Nacional de México — Campus
+		Chilpancingo &nbsp;·&nbsp; Departamento de Desarrollo Académico </footer>
+
+</body>
+</html>

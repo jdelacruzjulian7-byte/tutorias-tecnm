@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asignaciones | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Asignaciones tutor - tutorado')}"></div>
+
+        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
+
+        <section class="card">
+            <div class="card-title">
+                Asignaciones registradas
+                <a th:href="@{/asignaciones/nuevo}" class="btn btn-primary btn-sm">+ Nueva asignacion</a>
+            </div>
+            <div style="margin-bottom:14px;">
+                <input type="text" id="buscar" class="form-input"
+                       placeholder="Buscar..." oninput="filtrarTabla('tablaAsignaciones','buscar')"/>
+            </div>
+            <div class="table-wrap">
+                <table class="table" id="tablaAsignaciones">
+                    <thead>
+                        <tr>
+                            <th>Tutor</th>
+                            <th>Tutorado</th>
+                            <th>Semestre</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${asignaciones}">
+                            <td th:text="${a.tutor != null and a.tutor.usuario != null} ? ${a.tutor.usuario.nombre + ' ' + a.tutor.usuario.apellido} : '-'">-</td>
+                            <td th:text="${a.tutorado != null and a.tutorado.usuario != null} ? ${a.tutorado.usuario.nombre + ' ' + a.tutorado.usuario.apellido} : '-'">-</td>
+                            <td th:text="${a.semestre != null} ? ${a.semestre.nombre} : '-'">-</td>
+                            <td>
+                                <span th:if="${a.activo}" class="badge success">Activa</span>
+                                <span th:unless="${a.activo}" class="badge danger">Inactiva</span>
+                            </td>
+                            <td class="text-right">
+                                <a th:href="@{'/asignaciones/detalle/' + ${a.id}}" class="btn btn-ghost btn-sm">Ver</a>
+                                <a th:href="@{'/asignaciones/editar/' + ${a.id}}" class="btn btn-secondary btn-sm">Editar</a>
+                                <a th:href="@{'/asignaciones/eliminar/' + ${a.id}}"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Eliminar esta asignacion?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}">
+                            <td colspan="5" class="text-center text-muted">No hay asignaciones registradas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+function filtrarTabla(tablaId, inputId) {
+    const q = document.getElementById(inputId).value.toLowerCase();
+    document.querySelectorAll('#' + tablaId + ' tbody tr').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

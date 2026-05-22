@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+
+	<nav class="sidebar" th:fragment="sidebar(activeRol)">
+
+		<div class="brand">
+			<span class="brand-icon">T</span>
+			<div>
+				<div class="brand-name">Tutorias TecNM</div>
+				<div class="brand-sub">Chilpancingo</div>
+			</div>
+		</div>
+
+		<!-- Mi panel -->
+		<div class="nav-section">
+			<div class="nav-title">Mi panel</div>
+
+			<a sec:authorize="hasRole('ADMIN')" th:href="@{/dashboard/admin}"
+				class="nav-link" th:classappend="${activeRol=='admin'}? ' active'">
+				<span class="nav-icon">&#127968;</span> Admin
+			</a> <a sec:authorize="hasRole('TUTOR')" th:href="@{/dashboard/tutor}"
+				class="nav-link" th:classappend="${activeRol=='tutor'}? ' active'">
+				<span class="nav-icon">&#127968;</span> Mi panel (Tutor)
+			</a> <a sec:authorize="hasRole('TUTORADO')"
+				th:href="@{/dashboard/tutorado}" class="nav-link"
+				th:classappend="${activeRol=='tutorado'}? ' active'"> <span
+				class="nav-icon">&#127968;</span> Mi avance
+			</a> <a sec:authorize="hasRole('COORDINADOR')"
+				th:href="@{/dashboard/coordinador}" class="nav-link"
+				th:classappend="${activeRol=='coordinador'}? ' active'"> <span
+				class="nav-icon">&#127968;</span> Coordinacion
+			</a> <a sec:authorize="hasRole('JEFE')" th:href="@{/dashboard/jefe}"
+				class="nav-link" th:classappend="${activeRol=='jefe'}? ' active'">
+				<span class="nav-icon">&#127968;</span> Jefe Academico
+			</a> <a sec:authorize="hasRole('SUBDIRECTOR')"
+				th:href="@{/dashboard/subdirector}" class="nav-link"
+				th:classappend="${activeRol=='subdirector'}? ' active'"> <span
+				class="nav-icon">&#127968;</span> Subdireccion
+			</a>
+		</div>
+
+		<!-- Gestión -->
+		<div class="nav-section"
+			sec:authorize="hasAnyRole('ADMIN','JEFE','TUTOR','COORDINADOR')">
+			<div class="nav-title">Gestion</div>
+
+			<a sec:authorize="hasRole('ADMIN')" th:href="@{/usuarios}"
+				class="nav-link"> <span class="nav-icon">&#128101;</span>
+				Usuarios
+			</a> <a sec:authorize="hasRole('ADMIN')" th:href="@{/carreras}"
+				class="nav-link"> <span class="nav-icon">&#127979;</span>
+				Carreras
+			</a> <a sec:authorize="hasRole('ADMIN')" th:href="@{/semestres}"
+				class="nav-link"> <span class="nav-icon">&#128197;</span>
+				Semestres
+			</a> <a sec:authorize="hasAnyRole('ADMIN','JEFE')" th:href="@{/tutores}"
+				class="nav-link"> <span class="nav-icon">&#128104;</span>
+				Tutores
+			</a> <a sec:authorize="hasAnyRole('ADMIN','TUTOR','JEFE','SUBDIRECTOR')"
+				th:href="@{/tutorados}" class="nav-link"> <span class="nav-icon">&#127891;</span>
+				Tutorados
+			</a> <a sec:authorize="hasAnyRole('ADMIN','JEFE')"
+				th:href="@{/asignaciones}" class="nav-link"> <span
+				class="nav-icon">&#128279;</span> Asignaciones
+			</a> <a sec:authorize="hasAnyRole('ADMIN','COORDINADOR','TUTOR','JEFE','SUBDIRECTOR')"
+				th:href="@{/pats}" class="nav-link"> <span class="nav-icon">&#128203;</span>
+				PAT
+			</a> <a sec:authorize="hasAnyRole('ADMIN','COORDINADOR','TUTOR')"
+				th:href="@{/actividades}" class="nav-link"> <span
+				class="nav-icon">&#128466;</span> Actividades
+			</a> <a sec:authorize="hasAnyRole('ADMIN','COORDINADOR','TUTOR')"
+				th:href="@{/sesiones}" class="nav-link"> <span class="nav-icon">&#128340;</span>
+				Sesiones
+			</a> <a sec:authorize="hasAnyRole('ADMIN','TUTOR','COORDINADOR')"
+				th:href="@{/asistencias}" class="nav-link"> <span
+				class="nav-icon">&#9989;</span> Asistencias
+			</a> <a sec:authorize="hasAnyRole('ADMIN','SUBDIRECTOR','COORDINADOR','TUTORADO','TUTOR','JEFE')"
+				th:href="@{/documentos}" class="nav-link"> <span
+				class="nav-icon">&#128196;</span> Documentos
+			</a>
+
+			<!-- Búsqueda avanzada — solo ADMIN -->
+			<a sec:authorize="hasRole('ADMIN')" th:href="@{/buscar}"
+				class="nav-link" th:classappend="${activeRol=='buscar'}? ' active'">
+				<span class="nav-icon">🔍</span> Búsqueda
+			</a>
+		</div>
+
+		<!-- Cerrar sesión -->
+		<div class="nav-section"
+			style="margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border);">
+			<form th:action="@{/logout}" method="post" style="margin: 0;">
+				<button type="submit" class="nav-link"
+					style="width: 100%; background: none; border: none; cursor: pointer; text-align: left; color: var(--text-mid);">
+					<span class="nav-icon">&#128682;</span> Cerrar sesion
+				</button>
+			</form>
+		</div>
+
+	</nav>
+
+	<div class="topbar" th:fragment="topbar(titulo)">
+		<div class="page-title" th:text="${titulo}">Titulo de pagina</div>
+		<div class="user-chip" sec:authorize="isAuthenticated()">
+			<span class="avatar"
+				th:text="${#strings.toUpperCase(#strings.substring(#authentication.name,0,1))}">U</span>
+			<span sec:authentication="name">usuario</span>
+		</div>
+	</div>
+
+</body>
+</html>

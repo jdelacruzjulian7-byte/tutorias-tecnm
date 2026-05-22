@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalle asignacion | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Detalle de asignacion')}"></div>
+
+        <section class="card" style="max-width:760px;">
+            <div class="card-title">Detalle de asignacion</div>
+
+            <div th:if="${asignacion == null}" class="text-muted" style="text-align:center; padding:32px 0;">
+                Asignacion no encontrada.
+            </div>
+
+            <div th:if="${asignacion != null}">
+
+                <div class="form-row" style="margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px;">Tutorado</label>
+                        <div style="font-size:15px; font-weight:600;"
+                             th:text="${asignacion.tutorado != null and asignacion.tutorado.usuario != null}
+                                      ? ${asignacion.tutorado.usuario.nombre + ' ' + asignacion.tutorado.usuario.apellido}
+                                      : '—'">—</div>
+                        <div class="text-muted" style="font-size:12px;"
+                             th:text="${asignacion.tutorado != null} ? 'Matricula: ' + ${asignacion.tutorado.matricula} : ''"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px;">Tutor asignado</label>
+                        <div style="font-size:15px; font-weight:600;"
+                             th:text="${asignacion.tutor != null and asignacion.tutor.usuario != null}
+                                      ? ${asignacion.tutor.usuario.nombre + ' ' + asignacion.tutor.usuario.apellido}
+                                      : '—'">—</div>
+                    </div>
+                </div>
+
+                <div class="form-row" style="margin-bottom:16px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px;">Semestre</label>
+                        <div style="font-size:15px;"
+                             th:text="${asignacion.semestre != null} ? ${asignacion.semestre.nombre} : '—'">—</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11px; text-transform:uppercase; letter-spacing:.5px;">Estado</label>
+                        <div>
+                            <span th:if="${asignacion.activo}"
+                                  style="color:#27ae60; font-weight:700; font-size:15px;">✔ Activo</span>
+                            <span th:if="${!asignacion.activo}"
+                                  style="color:#e74c3c; font-weight:700; font-size:15px;">✘ Inactivo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <a th:href="@{/asignaciones/editar/{id}(id=${asignacion.id})}"
+                       class="btn btn-primary"
+                       sec:authorize="hasAnyRole('ADMIN','JEFE')">Editar</a>
+                    <a th:href="@{/asignaciones}" class="btn btn-secondary">Volver a la lista</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

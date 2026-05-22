@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tutorados inactivos | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Tutorados Inactivos')}"></div>
+        <section class="card">
+            <div class="card-title">
+                🔴 Tutorados inactivos
+                <a th:href="@{/tutorados}" class="btn btn-secondary btn-sm">← Volver a activos</a>
+            </div>
+            <div th:if="${#lists.isEmpty(tutorados)}"
+                 style="text-align:center;padding:48px;color:#6b7280;">
+                No hay tutorados inactivos.
+            </div>
+            <div th:unless="${#lists.isEmpty(tutorados)}" class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Matrícula</th><th>Nombre</th><th>Carrera</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="t : ${tutorados}">
+                            <td th:text="${t.matricula}">-</td>
+                            <td th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido} : '-'">-</td>
+                            <td th:text="${t.carrera != null ? t.carrera.nombre : '-'}">-</td>
+                            <td class="text-right">
+                                <form th:action="@{'/tutorados/reactivar/' + ${t.id}}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-primary btn-sm">✅ Reactivar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

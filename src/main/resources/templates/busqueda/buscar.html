@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Búsqueda | Sistema Tutorias TecNM</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <style>
+        .search-card {
+            background: linear-gradient(135deg,#f0f4ff,#e0e7ff);
+            border: 1px solid #c7d2fe; border-radius: 16px;
+            padding: 28px; margin-bottom: 24px;
+        }
+        .radio-group {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+        }
+        .radio-option {
+            display: flex; align-items: center; gap: 8px;
+            background: #fff; border: 1.5px solid #c7d2fe;
+            border-radius: 10px; padding: 10px 18px;
+            cursor: pointer; transition: all .15s;
+            font-size: 14px; font-weight: 600; color: #374151;
+        }
+        .radio-option:has(input:checked) {
+            background: #4f46e5; border-color: #4f46e5; color: #fff;
+        }
+        .radio-option input { display: none; }
+        .radio-option .icon { font-size: 18px; }
+
+        .tipo-group {
+            display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;
+        }
+        .tipo-option {
+            display: flex; align-items: center; gap: 8px;
+            background: #fff; border: 1.5px solid #e5e7eb;
+            border-radius: 8px; padding: 8px 16px;
+            cursor: pointer; transition: all .15s;
+            font-size: 13px; font-weight: 600; color: #6b7280;
+        }
+        .tipo-option:has(input:checked) {
+            background: #1e3a8a; border-color: #1e3a8a; color: #fff;
+        }
+        .tipo-option input { display: none; }
+
+        .search-input-wrap {
+            display: flex; gap: 10px; margin-top: 16px;
+        }
+        .search-input-wrap input,
+        .search-input-wrap select {
+            flex: 1; padding: 12px 16px;
+            border: 1.5px solid #c7d2fe; border-radius: 10px;
+            font-size: 15px; outline: none;
+        }
+        .search-input-wrap input:focus,
+        .search-input-wrap select:focus {
+            border-color: #4f46e5;
+        }
+        .btn-buscar {
+            background: #4f46e5; color: #fff; border: none;
+            padding: 12px 28px; border-radius: 10px;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            transition: background .15s;
+        }
+        .btn-buscar:hover { background: #4338ca; }
+
+        .resultado-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .resultado-count {
+            background: #4f46e5; color: #fff;
+            padding: 4px 14px; border-radius: 999px;
+            font-size: 13px; font-weight: 700;
+        }
+
+        /* Ocultar campos según selección */
+        #campo-nombre { display: none; }
+        #campo-semestre { display: none; }
+        #campo-carrera { display: none; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Búsqueda avanzada')}"></div>
+
+        <!-- Formulario de búsqueda -->
+        <section class="search-card">
+            <form th:action="@{/buscar/resultado}" method="get" id="formBusqueda">
+
+                <!-- ¿Qué quieres buscar? -->
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:#1e3a8a; margin-bottom:10px;">
+                        ¿Qué quieres buscar?
+                    </div>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="entidad" value="usuarios"
+                                   th:checked="${entidad == 'usuarios'}"
+                                   onchange="actualizarOpciones()"/>
+                            <span class="icon">👤</span> Usuarios
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="entidad" value="tutores"
+                                   th:checked="${entidad == 'tutores'}"
+                                   onchange="actualizarOpciones()"/>
+                            <span class="icon">🏫</span> Tutores
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="entidad" value="tutorados"
+                                   th:checked="${entidad == 'tutorados'}"
+                                   onchange="actualizarOpciones()"/>
+                            <span class="icon">🎓</span> Tutorados
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="entidad" value="pats"
+                                   th:checked="${entidad == 'pats'}"
+                                   onchange="actualizarOpciones()"/>
+                            <span class="icon">📋</span> PATs
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="entidad" value="asignaciones"
+                                   th:checked="${entidad == 'asignaciones'}"
+                                   onchange="actualizarOpciones()"/>
+                            <span class="icon">🔗</span> Asignaciones
+                        </label>
+                    </div>
+                </div>
+
+                <!-- ¿Cómo buscar? -->
+                <div style="margin-bottom:14px;">
+                    <div style="font-size:13px; font-weight:700; color:#1e3a8a; margin-bottom:10px;">
+                        ¿Cómo quieres buscar?
+                    </div>
+                    <div class="tipo-group">
+                        <label class="tipo-option">
+                            <input type="radio" name="tipoBusqueda" value="nombre"
+                                   th:checked="${tipoBusqueda == 'nombre' or tipoBusqueda == null}"
+                                   onchange="mostrarCampo('nombre')"/>
+                            🔤 Por nombre
+                        </label>
+                        <label class="tipo-option" id="opt-semestre">
+                            <input type="radio" name="tipoBusqueda" value="semestre"
+                                   th:checked="${tipoBusqueda == 'semestre'}"
+                                   onchange="mostrarCampo('semestre')"/>
+                            📅 Por semestre
+                        </label>
+                        <label class="tipo-option" id="opt-carrera">
+                            <input type="radio" name="tipoBusqueda" value="carrera"
+                                   th:checked="${tipoBusqueda == 'carrera'}"
+                                   onchange="mostrarCampo('carrera')"/>
+                            🏛️ Por carrera
+                        </label>
+                        <label class="tipo-option">
+                            <input type="radio" name="tipoBusqueda" value="todos"
+                                   th:checked="${tipoBusqueda == 'todos'}"
+                                   onchange="mostrarCampo('todos')"/>
+                            📋 Todos
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Campo de búsqueda dinámico -->
+                <div class="search-input-wrap">
+                    <div id="campo-nombre" style="flex:1;">
+                        <input type="text" name="termino"
+                               th:value="${termino}"
+                               placeholder="Escribe nombre, apellido o correo..."/>
+                    </div>
+                    <div id="campo-semestre" style="flex:1;">
+                        <select name="semestreId">
+                            <option value="">-- Selecciona semestre --</option>
+                            <option th:each="s : ${semestres}"
+                                    th:value="${s.id}"
+                                    th:text="${s.nombre}"
+                                    th:selected="${semestreId != null and semestreId == s.id}">
+                            </option>
+                        </select>
+                    </div>
+                    <div id="campo-carrera" style="flex:1;">
+                        <select name="carreraId">
+                            <option value="">-- Selecciona carrera --</option>
+                            <option th:each="c : ${carreras}"
+                                    th:value="${c.id}"
+                                    th:text="${c.nombre}"
+                                    th:selected="${carreraId != null and carreraId == c.id}">
+                            </option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-buscar">🔍 Buscar</button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- ═══ RESULTADOS ═══ -->
+
+        <!-- Usuarios -->
+        <section class="card" th:if="${usuarios != null}">
+            <div class="resultado-header">
+                <div class="card-title" style="margin:0;">Usuarios encontrados</div>
+                <span class="resultado-count" th:text="${total} + ' resultados'">0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nombre</th><th>Correo</th><th>Rol</th><th class="text-right">Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${usuarios}">
+                            <td th:text="${u.nombre + ' ' + u.apellido}">—</td>
+                            <td th:text="${u.correo}">—</td>
+                            <td><span class="badge warn" th:text="${u.rol != null ? u.rol.nombre : '—'}">—</span></td>
+                            <td class="text-right">
+                                <a th:href="@{/usuarios/detalle/{id}(id=${u.id})}" class="btn btn-secondary btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(usuarios)}">
+                            <td colspan="4" style="text-align:center;color:#9ca3af;padding:24px;">Sin resultados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tutores -->
+        <section class="card" th:if="${tutores != null}">
+            <div class="resultado-header">
+                <div class="card-title" style="margin:0;">Tutores encontrados</div>
+                <span class="resultado-count" th:text="${total} + ' resultados'">0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nombre</th><th>Carrera</th><th>Estado</th><th class="text-right">Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="t : ${tutores}">
+                            <td th:text="${t.usuario != null ? t.usuario.nombre + ' ' + t.usuario.apellido : '—'}">—</td>
+                            <td th:text="${t.carrera != null ? t.carrera.nombre : '—'}">—</td>
+                            <td>
+                                <span th:if="${t.activo}" class="badge success">Activo</span>
+                                <span th:unless="${t.activo}" class="badge danger">Inactivo</span>
+                            </td>
+                            <td class="text-right">
+                                <a th:href="@{/tutores/editar/{id}(id=${t.id})}" class="btn btn-secondary btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tutores)}">
+                            <td colspan="4" style="text-align:center;color:#9ca3af;padding:24px;">Sin resultados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Tutorados -->
+        <section class="card" th:if="${tutorados != null}">
+            <div class="resultado-header">
+                <div class="card-title" style="margin:0;">Tutorados encontrados</div>
+                <span class="resultado-count" th:text="${total} + ' resultados'">0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nombre</th><th>Matrícula</th><th>Carrera</th><th>Semestre ingreso</th><th class="text-right">Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="t : ${tutorados}">
+                            <td th:text="${t.usuario != null ? t.usuario.nombre + ' ' + t.usuario.apellido : '—'}">—</td>
+                            <td th:text="${t.matricula ?: '—'}">—</td>
+                            <td th:text="${t.carrera != null ? t.carrera.nombre : '—'}">—</td>
+                            <td th:text="${t.semestreIngreso ?: '—'}">—</td>
+                            <td class="text-right">
+                                <a th:href="@{/tutorados/detalle/{id}(id=${t.id})}" class="btn btn-secondary btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tutorados)}">
+                            <td colspan="5" style="text-align:center;color:#9ca3af;padding:24px;">Sin resultados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- PATs -->
+        <section class="card" th:if="${pats != null}">
+            <div class="resultado-header">
+                <div class="card-title" style="margin:0;">PATs encontrados</div>
+                <span class="resultado-count" th:text="${total} + ' resultados'">0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Versión</th><th>Carrera</th><th>Semestre</th><th>Estado</th><th class="text-right">Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${pats}">
+                            <td th:text="${p.version ?: '—'}">—</td>
+                            <td th:text="${p.carrera != null ? p.carrera.nombre : '—'}">—</td>
+                            <td th:text="${p.semestre != null ? p.semestre.nombre : '—'}">—</td>
+                            <td><span class="badge warn" th:text="${p.estado ?: 'PENDIENTE'}">—</span></td>
+                            <td class="text-right">
+                                <a th:href="@{/pats/detalle/{id}(id=${p.id})}" class="btn btn-secondary btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(pats)}">
+                            <td colspan="5" style="text-align:center;color:#9ca3af;padding:24px;">Sin resultados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Asignaciones -->
+        <section class="card" th:if="${asignaciones != null}">
+            <div class="resultado-header">
+                <div class="card-title" style="margin:0;">Asignaciones encontradas</div>
+                <span class="resultado-count" th:text="${total} + ' resultados'">0</span>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Tutor</th><th>Tutorado</th><th>Semestre</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${asignaciones}">
+                            <td th:text="${a.tutor?.usuario != null ? a.tutor.usuario.nombre + ' ' + a.tutor.usuario.apellido : '—'}">—</td>
+                            <td th:text="${a.tutorado?.usuario != null ? a.tutorado.usuario.nombre + ' ' + a.tutorado.usuario.apellido : '—'}">—</td>
+                            <td th:text="${a.semestre != null ? a.semestre.nombre : '—'}">—</td>
+                            <td>
+                                <span th:if="${a.activo}" class="badge success">Activa</span>
+                                <span th:unless="${a.activo}" class="badge danger">Inactiva</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(asignaciones)}">
+                            <td colspan="4" style="text-align:center;color:#9ca3af;padding:24px;">Sin resultados</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+// Mostrar campo según tipo de búsqueda
+function mostrarCampo(tipo) {
+    document.getElementById('campo-nombre').style.display   = tipo === 'nombre'   ? 'flex' : 'none';
+    document.getElementById('campo-semestre').style.display = tipo === 'semestre' ? 'flex' : 'none';
+    document.getElementById('campo-carrera').style.display  = tipo === 'carrera'  ? 'flex' : 'none';
+}
+
+// Actualizar opciones según entidad seleccionada
+function actualizarOpciones() {
+    const entidad = document.querySelector('input[name="entidad"]:checked')?.value;
+    const optSemestre = document.getElementById('opt-semestre');
+    const optCarrera  = document.getElementById('opt-carrera');
+
+    // Usuarios solo busca por nombre
+    if (entidad === 'usuarios') {
+        optSemestre.style.opacity = '.4'; optSemestre.style.pointerEvents = 'none';
+        optCarrera.style.opacity  = '.4'; optCarrera.style.pointerEvents  = 'none';
+        document.querySelector('input[value="nombre"]').checked = true;
+        mostrarCampo('nombre');
+    } else {
+        optSemestre.style.opacity = '1'; optSemestre.style.pointerEvents = 'auto';
+        optCarrera.style.opacity  = '1'; optCarrera.style.pointerEvents  = 'auto';
+    }
+}
+
+// Inicializar al cargar
+document.addEventListener('DOMContentLoaded', () => {
+    const tipoBusqueda = document.querySelector('input[name="tipoBusqueda"]:checked')?.value || 'nombre';
+    mostrarCampo(tipoBusqueda);
+    actualizarOpciones();
+});
+</script>
+</body>
+</html>

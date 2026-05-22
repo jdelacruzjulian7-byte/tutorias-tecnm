@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mi avance | Tutorado | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('tutorado')}"></div>
+		<main class="main">
+			<div
+				th:replace="~{fragments/layout :: topbar('Mi avance de Tutorías')}"></div>
+
+			<section class="hero">
+				<h1>
+					Hola, <span
+						th:text="${usuario != null} ? ${usuario.nombre} : 'alumno'">alumno</span>
+				</h1>
+				<p>Consulta tu porcentaje de asistencia y tus documentos.</p>
+				<span class="hero-badge" th:if="${semestreActivo != null}"
+					th:text="'Semestre activo: ' + ${semestreActivo.nombre}">Semestre</span>
+			</section>
+
+			<section class="stat-grid">
+				<div class="stat">
+					<div class="stat-label">Mi % asistencia</div>
+					<div class="stat-value"
+						th:classappend="${apto} ? ' success' : ' warn'"
+						th:text="${#numbers.formatDecimal(porcentajeAsistencia, 1, 1)} + '%'">0%</div>
+					<div class="progress mt-8">
+						<div class="progress-bar" th:classappend="${nivelAsistencia}"
+							th:style="'width:' + ${porcentajeAsistencia} + '%;'"></div>
+					</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">Estado para constancia</div>
+					<div class="stat-value" style="font-size: 18px;"
+						th:classappend="${apto} ? ' success' : ' warn'"
+						th:text="${apto} ? '✅ Apto (≥80%)' : '⏳ No apto aún'">-</div>
+				</div>
+				<div class="stat">
+					<div class="stat-label">Mi tutor</div>
+					<div class="stat-value" style="font-size: 15px;"
+						th:text="${miTutor != null and miTutor.usuario != null}
+                               ? ${miTutor.usuario.nombre + ' ' + miTutor.usuario.apellido}
+                               : 'Sin asignar'">-</div>
+				</div>
+			</section>
+
+			<!-- Mis datos -->
+			<section class="card" th:if="${tutorado != null}">
+				<div class="card-title">Mis datos</div>
+				<div class="form-row">
+					<div>
+						<div class="text-muted" style="font-size: 11px;">Matrícula</div>
+						<div th:text="${tutorado.matricula}">-</div>
+					</div>
+					<div>
+						<div class="text-muted" style="font-size: 11px;">Carrera</div>
+						<div
+							th:text="${tutorado.carrera != null ? tutorado.carrera.nombre : '-'}">-</div>
+					</div>
+					<div>
+						<div class="text-muted" style="font-size: 11px;">Semestre de
+							ingreso</div>
+						<div th:text="${tutorado.semestreIngreso}">-</div>
+					</div>
+					<div>
+						<div class="text-muted" style="font-size: 11px;">Correo</div>
+						<div th:text="${usuario.correo}">-</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Mis documentos -->
+			<section class="card">
+				<div class="card-title">📄 Mis documentos</div>
+				<div class="flex gap-12"
+					style="flex-wrap: wrap; margin-bottom: 16px;">
+					<!-- Carnet: siempre disponible -->
+					<a
+						th:href="@{'/documentos/generar/CARNET/' + ${usuarioId} + '?origen=tutorado'}"
+						class="btn btn-primary">🪪 Ver mi Carnet</a>
+					<!-- Constancia: solo si es apto -->
+					<a th:if="${apto}"
+						th:href="@{'/documentos/generar/CONSTANCIA/' + ${usuarioId} + '?origen=tutorado'}"
+						class="btn btn-secondary">📜 Ver Constancia</a> <span
+						th:unless="${apto}" class="btn btn-ghost"
+						style="opacity: 0.5; cursor: not-allowed;"
+						title="Necesitas 80% de asistencia para obtener constancia">
+						📜 Constancia (necesitas ≥80%) </span>
+				</div>
+
+				<div th:if="${!#lists.isEmpty(misDocumentos)}" class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>Tipo</th>
+								<th>Fecha</th>
+								<th>Semestre</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="d : ${misDocumentos}">
+								<td th:text="${d.tipo}">-</td>
+								<td th:text="${d.fechaEmision}">-</td>
+								<td th:text="${d.semestre != null ? d.semestre.nombre : '-'}">-</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<p th:if="${#lists.isEmpty(misDocumentos)}" class="text-muted"
+					style="font-size: 13px;">Aún no tienes documentos generados.</p>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

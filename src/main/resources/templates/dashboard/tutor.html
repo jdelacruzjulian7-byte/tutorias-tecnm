@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mi panel | Tutor | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('tutor')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Mi panel de Tutor')}"></div>
+
+        <section class="hero">
+            <h1>Hola, <span th:text="${usuario != null} ? ${usuario.nombre} : 'tutor'">tutor</span></h1>
+            <p>Estos son tus tutorados y sesiones del semestre activo.</p>
+            <span class="hero-badge" th:if="${semestreActivo != null}"
+                  th:text="'Semestre activo: ' + ${semestreActivo.nombre}">Semestre</span>
+            <span class="hero-badge" th:if="${tutor != null and tutor.carrera != null}"
+                  th:text="'Carrera: ' + ${tutor.carrera.nombre}">Carrera</span>
+        </section>
+
+        <section class="stat-grid">
+            <div class="stat">
+                <div class="stat-label">Mis tutorados</div>
+                <div class="stat-value accent" th:text="${totalTutorados}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Sesiones registradas</div>
+                <div class="stat-value" th:text="${misSesiones != null ? #lists.size(misSesiones) : 0}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">PAT activo</div>
+                <div class="stat-value" style="font-size:15px;"
+                     th:text="${miPat != null} ? ${miPat.version} : 'Sin PAT asignado'">-</div>
+            </div>
+        </section>
+
+        <!-- Mis tutorados -->
+        <section class="card">
+            <div class="card-title">
+                Mis tutorados
+                <a th:href="@{/sesiones}" class="btn btn-primary btn-sm">📋 Ir a Sesiones</a>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Matrícula</th><th>Alumno</th><th>Carrera</th><th>Asistencia</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="td : ${tutorados}">
+                            <td th:text="${td.matricula}">M0001</td>
+                            <td th:text="${td.usuario != null} ? ${td.usuario.nombre + ' ' + td.usuario.apellido} : '-'">-</td>
+                            <td th:text="${td.carrera != null} ? ${td.carrera.nombre} : '-'">-</td>
+                            <td>
+                                <a th:href="@{'/tutorados/detalle/' + ${td.id}}" class="btn btn-ghost btn-sm">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(tutorados)}">
+                            <td colspan="4" class="text-center text-muted" style="padding:32px;">
+                                Aún no tienes tutorados asignados en este semestre.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Mi PAT -->
+        <section class="card" th:if="${miPat != null}">
+            <div class="card-title">
+                Mi PAT — <span th:text="${miPat.carrera != null ? miPat.carrera.nombre : '-'}">-</span>
+                <a th:href="@{'/pats/detalle/' + ${miPat.id}}" class="btn btn-secondary btn-sm">Ver PAT completo</a>
+            </div>
+            <p style="font-size:13px;color:#6b7280;">
+                Versión: <strong th:text="${miPat.version}">-</strong> &nbsp;|&nbsp;
+                Estado: <strong th:text="${miPat.estado}">-</strong>
+            </p>
+        </section>
+
+        <!-- Acciones rápidas -->
+        <section class="card">
+            <div class="card-title">Acciones rápidas</div>
+            <div class="flex gap-12" style="flex-wrap:wrap;">
+                <a th:href="@{/sesiones}" class="btn btn-primary">📋 Mis sesiones y asistencia</a>
+                <a th:href="@{/sesiones/nuevo}" class="btn btn-secondary">+ Nueva sesión</a>
+                <a th:href="@{/tutorados}" class="btn btn-secondary">Ver mis tutorados</a>
+                <a th:if="${miPat != null}" th:href="@{'/pats/detalle/' + ${miPat.id}}" class="btn btn-secondary">Ver PAT</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sesiones | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<style>
+.alert-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#15803d;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.alert-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+</style>
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+		<main class="main">
+			<div
+				th:replace="~{fragments/layout :: topbar('Sesiones de tutoría')}"></div>
+
+			<section class="card">
+				<div class="card-title">
+					Sesiones registradas <a th:href="@{/sesiones/nuevo}"
+						class="btn btn-primary">+ Nueva sesión</a>
+				</div>
+
+				<div th:if="${msg}" class="alert-success" th:utext="${msg}"></div>
+				<div th:if="${error}" class="alert-error" th:utext="${error}"></div>
+
+				<div th:if="${sesiones == null or #lists.isEmpty(sesiones)}"
+					style="text-align: center; padding: 48px 0; color: #6b7280;">
+					No hay sesiones registradas aún.</div>
+
+				<div th:unless="${sesiones == null or #lists.isEmpty(sesiones)}"
+					class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Nombre</th>
+								<th>Fecha</th>
+								<th>Hora</th>
+								<th>Aula</th>
+								<th>Tutor</th>
+								<th>Actividad PAT</th>
+								<th class="text-right">Acciones</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="s : ${sesiones}">
+								<td th:text="${s.id}">1</td>
+								<td style="font-weight: 600;" th:text="${s.nombre ?: '—'}">Sesión
+									1</td>
+								<td
+									th:text="${s.fecha != null} ? ${#temporals.format(s.fecha,'dd/MM/yyyy')} : '—'">—</td>
+								<td><span th:if="${s.horaInicio != null}"
+									th:text="${s.horaInicio + ' — ' + (s.horaFin != null ? s.horaFin : '?')}">
+								</span> <span th:if="${s.horaInicio == null}" style="color: #9ca3af;">—</span>
+								</td>
+								<td th:text="${s.aula ?: '—'}">—</td>
+								<td><span
+									th:if="${s.tutor != null and s.tutor.usuario != null}"
+									th:text="${s.tutor.usuario.nombre + ' ' + s.tutor.usuario.apellido}">
+								</span> <span th:if="${s.tutor == null}" style="color: #9ca3af;">—</span>
+								</td>
+								<td><span th:if="${s.actividad != null}"
+									th:text="'Sem ' + ${s.actividad.semana} + ' — ' + ${s.actividad.tema}">
+								</span> <span th:if="${s.actividad == null}" style="color: #9ca3af;">—</span>
+								</td>
+								<td class="text-right"><a
+									th:href="@{/asistencias/sesion/{id}(id=${s.id})}"
+									class="btn btn-primary btn-sm">📋 Asistencia</a> <a
+									th:href="@{/sesiones/editar/{id}(id=${s.id})}"
+									class="btn btn-secondary btn-sm">Editar</a> <a
+									th:href="@{/sesiones/eliminar/{id}(id=${s.id})}"
+									class="btn btn-danger btn-sm"
+									onclick="return confirm('¿Eliminar esta sesión?')">Eliminar</a>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

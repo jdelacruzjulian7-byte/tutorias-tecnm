@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Panel Subdirector | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('subdirector')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Vista ejecutiva - Subdirección')}"></div>
+
+        <section class="hero">
+            <h1>Hola, <span th:text="${usuario != null} ? ${usuario.nombre} : 'subdirector'">subdirector</span></h1>
+            <p>Resumen institucional del programa de tutorías y firma de documentos oficiales.</p>
+            <span class="hero-badge" th:if="${semestreActivo != null}"
+                  th:text="'Semestre activo: ' + ${semestreActivo.nombre}">Semestre</span>
+            <span class="hero-badge">TecNM Campus Chilpancingo</span>
+        </section>
+
+        <section class="stat-grid">
+            <div class="stat">
+                <div class="stat-label">Tutores institucionales</div>
+                <div class="stat-value accent" th:text="${totalTutores != null ? totalTutores : 0}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Tutorados registrados</div>
+                <div class="stat-value success" th:text="${totalTutorados != null ? totalTutorados : 0}">0</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Documentos generados</div>
+                <div class="stat-value" th:text="${docsPendientes != null ? docsPendientes : 0}">0</div>
+            </div>
+        </section>
+
+        <!-- Acciones del subdirector -->
+        <section class="card">
+            <div class="card-title">📄 Acciones de firma y validación</div>
+            <div class="flex gap-12" style="flex-wrap:wrap;">
+                <a th:href="@{/documentos}" class="btn btn-primary">Ver todos los documentos</a>
+                <a th:href="@{/tutorados}" class="btn btn-secondary">Ver tutorados</a>
+                <a th:href="@{/tutores}" class="btn btn-secondary">Ver tutores</a>
+                <a th:href="@{/pats}" class="btn btn-secondary">Ver PATs</a>
+            </div>
+        </section>
+
+        <!-- Documentos recientes -->
+        <section class="card">
+            <div class="card-title">
+                Documentos recientes
+                <a th:href="@{/documentos}" class="btn btn-ghost btn-sm">Ver todos</a>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Tipo</th><th>Alumno</th><th>Semestre</th><th>Fecha</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="d : ${documentos}" th:if="${dStat.index < 10}">
+                            <td>
+                                <span th:text="${d.tipo}">-</span>
+                            </td>
+                            <td th:text="${d.usuario != null} ? ${d.usuario.nombre + ' ' + d.usuario.apellido} : '-'">-</td>
+                            <td th:text="${d.semestre != null ? d.semestre.nombre : '-'}">-</td>
+                            <td th:text="${d.fechaEmision}">-</td>
+                            <td>
+                                <!-- Subdirector puede ver carnets y constancias de cualquier alumno -->
+                                <a th:if="${d.tipo == 'CARNET'}"
+                                   th:href="@{'/documentos/generar/CARNET/' + ${d.usuario.id}}"
+                                   class="btn btn-ghost btn-sm">🪪 Ver Carnet</a>
+                                <a th:if="${d.tipo == 'CONSTANCIA'}"
+                                   th:href="@{'/documentos/generar/CONSTANCIA/' + ${d.usuario.id}}"
+                                   class="btn btn-ghost btn-sm">📜 Ver Constancia</a>
+                                <a th:if="${d.tipo == 'OFICIO_TERMINO'}"
+                                   th:href="@{'/documentos/generar/OFICIO_TERMINO/' + ${d.usuario.id}}"
+                                   class="btn btn-ghost btn-sm">📋 Ver Oficio</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${documentos == null or #lists.isEmpty(documentos)}">
+                            <td colspan="5" class="text-center text-muted" style="padding:24px;">
+                                No hay documentos generados aún.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Usuario | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<style>
+.seccion-rol {
+	margin-top: 24px;
+	padding: 20px;
+	border: 1.5px dashed #c7d2fe;
+	border-radius: 12px;
+	background: #f8faff;
+	animation: fadeIn .25s ease;
+}
+
+.seccion-rol h3 {
+	margin: 0 0 14px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #1e3a8a;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.seccion-rol h3::before {
+	content: "▸";
+	color: #4f46e5;
+}
+
+.hint {
+	font-size: 12px;
+	color: #6b7280;
+	margin-top: -4px;
+	margin-bottom: 8px;
+}
+
+
+keyframes fadeIn {from { opacity:0;
+	transform: translateY(-4px);
+}
+
+to {
+	opacity: 1;
+	transform: translateY(0);
+}
+}
+</style>
+</head>
+<body>
+
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+		<main class="main">
+			<div
+				th:replace="~{fragments/layout :: topbar(${usuario.id == null ? 'Nuevo usuario' : 'Editar usuario'})}"></div>
+
+			<section class="card" style="max-width: 860px;">
+				<div class="card-title"
+					th:text="${usuario.id == null ? 'Registrar usuario' : 'Editar usuario'}">Usuario</div>
+
+				<div th:if="${error}"
+					style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; font-weight: 600;">
+					⚠️ <span th:text="${error}"></span>
+				</div>
+
+				<form th:action="@{/usuarios/guardar}" th:object="${usuario}"
+					method="post" enctype="multipart/form-data" id="formUsuario">
+
+					<input type="hidden" th:field="*{id}" />
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Nombre *</label> <input type="text"
+								class="form-input" th:field="*{nombre}" required />
+						</div>
+						<div class="form-group">
+							<label class="form-label">Apellido *</label> <input type="text"
+								class="form-input" th:field="*{apellido}" required />
+						</div>
+					</div>
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Correo institucional *</label> <input
+								type="email" class="form-input" th:field="*{correo}"
+								placeholder="usuario@chilpancingo.tecnm.mx" required />
+						</div>
+						<div class="form-group">
+							<label class="form-label"> Contraseña <span
+								th:if="${usuario.id != null}" class="hint"
+								style="display: inline;"> (déjala vacía para no
+									cambiarla) </span> <span th:if="${usuario.id == null}">*</span>
+							</label> <input type="password" class="form-input"
+								th:field="*{contrasena}" placeholder="********"
+								th:required="${usuario.id == null}" />
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Rol *</label> <select class="form-input"
+							name="rol.id" id="selectRol" required
+							onchange="actualizarSeccionRol()">
+							<option value="">-- Selecciona un rol --</option>
+							<option th:each="r : ${roles}" th:value="${r.id}"
+								th:text="${r.nombre}"
+								th:selected="${usuario.rol != null and usuario.rol.id == r.id}">
+							</option>
+						</select>
+						<p class="hint">
+							Si eliges <b>TUTOR</b> o <b>TUTORADO</b> aparecerán los campos
+							extra abajo.
+						</p>
+					</div>
+
+					<div id="seccionTutor" class="seccion-rol" style="display: none;">
+						<h3>Datos del Tutor</h3>
+						<div class="form-row">
+							<div class="form-group">
+								<label class="form-label">Carrera *</label> <select
+									class="form-input" name="carreraIdTutor" id="carreraTutor">
+									<option value="">-- Selecciona --</option>
+									<option th:each="c : ${carreras}" th:value="${c.id}"
+										th:text="${c.nombre}"
+										th:selected="${tutorExistente != null and tutorExistente.carrera != null
+                                                       and tutorExistente.carrera.id == c.id}">
+									</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Estado</label> <select
+									class="form-input" name="activoTutor" id="activoTutor">
+									<option value="true"
+										th:selected="${tutorExistente == null or tutorExistente.activo}">Activo</option>
+									<option value="false"
+										th:selected="${tutorExistente != null and !tutorExistente.activo}">Inactivo</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Foto del tutor (opcional)</label> <input
+								type="file" class="form-input" name="archivoFotoTutor"
+								id="fotoTutor" accept="image/*" />
+							<p class="hint"
+								th:if="${tutorExistente != null and tutorExistente.foto != null}"
+								th:text="'Foto actual: ' + ${tutorExistente.foto}"></p>
+						</div>
+					</div>
+
+					<div id="seccionTutorado" class="seccion-rol"
+						style="display: none;">
+						<h3>Datos del Tutorado</h3>
+						<div class="form-row">
+							<div class="form-group">
+								<label class="form-label">Matrícula *</label> <input type="text"
+									class="form-input" name="matricula" id="matriculaTutorado"
+									th:value="${tutoradoExistente != null} ? ${tutoradoExistente.matricula} : ''" />
+							</div>
+							<div class="form-group">
+								<label class="form-label">Semestre de ingreso *</label> <select
+									class="form-input" name="semestreIngreso"
+									id="semestreIngresoTutorado">
+									<option value="">-- Selecciona semestre --</option>
+									<option th:each="s : ${semestres}" th:value="${s.nombre}"
+										th:text="${s.nombre} + (${s.activo} ? ' (Activo)' : '')"
+										th:selected="${tutoradoExistente != null
+                                                       and tutoradoExistente.semestreIngreso != null
+                                                       and tutoradoExistente.semestreIngreso == s.nombre}">
+									</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-row">
+							<div class="form-group">
+								<label class="form-label">Carrera *</label> <select
+									class="form-input" name="carreraIdTutorado"
+									id="carreraTutorado">
+									<option value="">-- Selecciona --</option>
+									<option th:each="c : ${carreras}" th:value="${c.id}"
+										th:text="${c.nombre}"
+										th:selected="${tutoradoExistente != null and tutoradoExistente.carrera != null
+                                                       and tutoradoExistente.carrera.id == c.id}">
+									</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label class="form-label">Estado</label> <select
+									class="form-input" name="activoTutorado" id="activoTutorado">
+									<option value="true"
+										th:selected="${tutoradoExistente == null or tutoradoExistente.activo}">Activo</option>
+									<option value="false"
+										th:selected="${tutoradoExistente != null and !tutoradoExistente.activo}">Inactivo</option>
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="form-label">Foto del alumno (opcional)</label> <input
+								type="file" class="form-input" name="archivoFotoTutorado"
+								id="fotoTutorado" accept="image/*" />
+							<p class="hint"
+								th:if="${tutoradoExistente != null and tutoradoExistente.foto != null}"
+								th:text="'Foto actual: ' + ${tutoradoExistente.foto}"></p>
+						</div>
+					</div>
+
+					<!-- ───── Botones ───── -->
+					<div class="flex gap-12" style="margin-top: 24px;">
+						<button type="submit" class="btn btn-primary">Guardar
+							usuario</button>
+						<a th:href="@{/usuarios}" class="btn btn-secondary">Cancelar</a>
+					</div>
+
+				</form>
+			</section>
+		</main>
+	</div>
+
+	<script>
+function actualizarSeccionRol() {
+    const select = document.getElementById('selectRol');
+    const opt    = select.options[select.selectedIndex];
+    const rol    = opt ? opt.text.trim().toUpperCase() : '';
+
+    const secTutor    = document.getElementById('seccionTutor');
+    const secTutorado = document.getElementById('seccionTutorado');
+
+    const mostrarTutor    = rol === 'TUTOR';
+    const mostrarTutorado = rol === 'TUTORADO';
+
+    secTutor.style.display    = mostrarTutor    ? 'block' : 'none';
+    secTutorado.style.display = mostrarTutorado ? 'block' : 'none';
+
+    setSectionEnabled(secTutor,    mostrarTutor);
+    setSectionEnabled(secTutorado, mostrarTutorado);
+
+    document.getElementById('carreraTutor').required            = mostrarTutor;
+    document.getElementById('carreraTutorado').required         = mostrarTutorado;
+    document.getElementById('matriculaTutorado').required       = mostrarTutorado;
+    document.getElementById('semestreIngresoTutorado').required = mostrarTutorado;
+}
+
+function setSectionEnabled(section, enabled) {
+    section.querySelectorAll('input, select').forEach(el => {
+        el.disabled = !enabled;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', actualizarSeccionRol);
+</script>
+
+</body>
+</html>

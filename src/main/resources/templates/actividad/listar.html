@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Actividades | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.badge.accent {
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1.5px solid #c7d2fe;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.alert-success {
+    background: #ecfdf5;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Actividades del PAT')}"></div>
+
+        <div th:if="${mensaje}" class="alert-success" th:text="${mensaje}"></div>
+
+        <section class="card">
+            <div class="card-title">
+                Lista de actividades
+                <a th:href="@{/actividades/nuevo}" class="btn btn-primary btn-sm">+ Nueva actividad</a>
+            </div>
+            <div style="margin-bottom:14px;">
+                <input type="text" id="buscar" class="form-input"
+                       placeholder="Buscar actividad..." oninput="filtrarTabla('tablaActividades','buscar')"/>
+            </div>
+            <div class="table-wrap">
+                <table class="table" id="tablaActividades">
+                    <thead>
+                        <tr>
+                            <th>Tema</th>
+                            <th>Ponente</th>
+                            <th>PAT</th>
+                            <th>Fecha</th>
+                            <th>Semana</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a : ${actividades}">
+                            <td>
+                                <div style="font-weight:600;" th:text="${a.tema ?: '-'}">Tema</div>
+                            </td>
+                            <td th:text="${a.ponente ?: '-'}">-</td>
+                            <td th:text="${a.pat != null and a.pat.carrera != null} ? (a.pat.carrera.nombre + ' · v' + (a.pat.version ?: '-')) : '-'">-</td>
+                            <td th:text="${a.fecha != null} ? ${#temporals.format(a.fecha, 'dd/MM/yyyy')} : '-'">-</td>
+                            <td>
+                                <span class="badge accent" th:if="${a.semana != null}" th:text="'Sem ' + ${a.semana}">Sem 1</span>
+                                <span th:unless="${a.semana != null}">-</span>
+                            </td>
+                            <td class="text-right">
+                                <a th:href="@{'/actividades/editar/' + ${a.id}}" class="btn btn-secondary btn-sm">Editar</a>
+                                <a th:href="@{'/actividades/eliminar/' + ${a.id}}"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('¿Eliminar esta actividad?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${actividades == null or #lists.isEmpty(actividades)}">
+                            <td colspan="6" class="text-center text-muted" style="padding:32px;">No hay actividades registradas.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+function filtrarTabla(tablaId, inputId) {
+    const q = document.getElementById(inputId).value.toLowerCase();
+    document.querySelectorAll('#' + tablaId + ' tbody tr').forEach(r => {
+        r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>

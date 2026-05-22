@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6" lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Documentos | Sistema Tutorias TecNM</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Documentos emitidos')}"></div>
+
+        <section class="card">
+            <div class="card-title">
+                Documentos emitidos
+                <a th:href="@{/documentos/nuevo}" class="btn btn-primary">+ Nuevo</a>
+            </div>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Alumno</th>
+                            <th>Tipo</th>
+                            <th>Semestre</th>
+                            <th>Fecha emisión</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="d : ${documentos}">
+                            <td th:text="${d.usuario != null ? d.usuario.nombre + ' ' + d.usuario.apellido : '—'}">—</td>
+                            <td>
+                                <span th:text="${d.tipo == 'CARNET'} ? '📄 Carnet'
+                                              : (${d.tipo == 'CONSTANCIA'} ? '📋 Constancia'
+                                              : '✅ Oficio de término')">—</span>
+                            </td>
+                            <td th:text="${d.semestre != null ? d.semestre.nombre : '—'}">—</td>
+                            <td th:text="${d.fechaEmision != null} ? ${#temporals.format(d.fechaEmision,'dd/MM/yyyy')} : '—'">—</td>
+                            <td class="text-right">
+                                <a th:if="${d.usuario != null}"
+                                   th:href="@{/documentos/generar/{tipo}/{id}(tipo=${d.tipo},id=${d.usuario.id})}"
+                                   class="btn btn-secondary btn-sm">Ver</a>
+                                <a th:href="@{/documentos/eliminar/{id}(id=${d.id})}"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('¿Eliminar este documento?')">Eliminar</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(documentos)}">
+                            <td colspan="5" style="text-align:center; color:#9ca3af; padding:40px;">
+                                No hay documentos emitidos aún.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

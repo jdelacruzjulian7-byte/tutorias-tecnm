@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asistencias | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Control de Asistencia')}"></div>
+
+        <section class="card">
+            <div class="card-title">
+                Asistencias registradas
+                <a sec:authorize="hasAnyRole('ADMIN','TUTOR')"
+                   th:href="@{/sesiones}" class="btn btn-primary btn-sm">📋 Ir a Sesiones</a>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Tutorado</th>
+                            <th>Sesion</th>
+                            <th>Fecha sesion</th>
+                            <th>Estado</th>
+                            <th class="text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="a, stat : ${asistencias}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${a.tutorado != null and a.tutorado.usuario != null} ? ${a.tutorado.usuario.nombre + ' ' + a.tutorado.usuario.apellido} : '-'">-</td>
+                            <td th:text="${a.sesion != null} ? ${a.sesion.nombre} : '-'">-</td>
+                            <td th:text="${a.sesion != null} ? ${a.sesion.fecha} : '-'">-</td>
+                            <td>
+                                <span th:if="${a.presente}" class="badge success">Presente</span>
+                                <span th:unless="${a.presente}" class="badge danger">Ausente</span>
+                            </td>
+                            <td class="text-right">
+                                <a th:href="@{'/asistencias/editar/' + ${a.id}}" class="btn btn-secondary btn-sm">Editar</a>
+                                <a sec:authorize="hasRole('ADMIN')"
+                                   th:href="@{'/asistencias/eliminar/' + ${a.id}}"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Eliminar este registro?');">Eliminar</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(asistencias)}">
+                            <td colspan="6" class="text-center text-muted">No hay registros de asistencia.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

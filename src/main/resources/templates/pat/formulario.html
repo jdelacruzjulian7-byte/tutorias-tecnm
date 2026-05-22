@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PAT | Sistema Tutorías TecNM</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${pat.id == null ? 'Nuevo PAT General' : 'Editar PAT'})}"></div>
+
+        <section class="card" style="max-width:760px;">
+            <div class="card-title" th:text="${pat.id == null ? 'Crear PAT General' : 'Editar PAT'}">PAT</div>
+
+            <!-- Error duplicado -->
+            <div th:if="${error}"
+                 style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#dc2626;">
+                ⚠️ <span th:text="${error}">Error</span>
+            </div>
+
+            <!-- Aviso informativo solo en creación -->
+            <div th:if="${pat.id == null}"
+                 style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:14px;color:#1e40af;">
+                <strong>ℹ️ PAT General:</strong> Solo puede existir un PAT General por semestre.
+                Una vez aprobado, se asigna a cada carrera para que el coordinador lo personalice.
+            </div>
+
+            <form th:action="@{/pats/guardar}" th:object="${pat}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+                <input type="hidden" name="esGeneral"
+                       th:value="${pat.id == null ? 'true' : (pat.esGeneral ? 'true' : 'false')}"/>
+
+                <!-- Semestre - el nombre del semestre es la "versión" -->
+                <div class="form-group">
+                    <label class="form-label">Semestre *
+                        <span style="font-size:11px;color:#6b7280;font-weight:400;">
+                            (Solo 1 PAT General por semestre)
+                        </span>
+                    </label>
+                    <select class="form-input" name="semestre.id" required>
+                        <option value="">-- Selecciona el semestre --</option>
+                        <option th:each="s : ${semestres}"
+                                th:value="${s.id}"
+                                th:text="${s.nombre}"
+                                th:selected="${pat.semestre != null and pat.semestre.id == s.id}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Estado - solo visible al editar -->
+                <div class="form-group" th:if="${pat.id != null}">
+                    <label class="form-label">Estado</label>
+                    <select class="form-input" th:field="*{estado}">
+                        <option value="PENDIENTE">Pendiente</option>
+                        <option value="APROBADO">Aprobado</option>
+                        <option value="RECHAZADO">Rechazado</option>
+                    </select>
+                </div>
+
+                <!-- Si es PAT de carrera existente, mostrar carrera como solo lectura -->
+                <div th:if="${pat.id != null and !pat.esGeneral and pat.carrera != null}"
+                     class="form-group">
+                    <label class="form-label">Carrera (asignada)</label>
+                    <input type="text" class="form-input"
+                           th:value="${pat.carrera.nombre}" disabled style="background:#f3f4f6;"/>
+                </div>
+
+                <div class="flex gap-12" style="margin-top:24px;">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${pat.id == null ? '✅ Crear PAT General' : 'Actualizar'}">Guardar</button>
+                    <a th:href="@{/pats}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

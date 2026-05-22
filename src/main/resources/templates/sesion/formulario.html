@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sesión | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+		<main class="main">
+			<div
+				th:replace="~{fragments/layout :: topbar(${sesion.id == null ? 'Nueva sesión' : 'Editar sesión'})}"></div>
+
+			<section class="card" style="max-width: 760px;">
+				<div class="card-title"
+					th:text="${sesion.id == null ? 'Nueva sesión' : 'Editar sesión'}">Sesión</div>
+
+				<p style="font-size: 13px; color: #6b7280; margin-bottom: 16px;">
+					Las sesiones representan cada viernes de tutoría y son la base para
+					registrar asistencias.</p>
+
+				<form th:action="@{/sesiones/guardar}" th:object="${sesion}"
+					method="post">
+					<input type="hidden" th:field="*{id}" />
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Nombre de la sesión *</label> <input
+								type="text" class="form-input" th:field="*{nombre}"
+								placeholder="Ej. Sesión 1 — Detección de necesidades" required />
+						</div>
+						<div class="form-group">
+							<label class="form-label">Fecha *</label> <input type="date"
+								class="form-input" th:field="*{fecha}" required />
+						</div>
+					</div>
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Hora de inicio</label> <input
+								type="time" class="form-input" th:field="*{horaInicio}" />
+						</div>
+						<div class="form-group">
+							<label class="form-label">Hora de fin</label> <input type="time"
+								class="form-input" th:field="*{horaFin}" />
+						</div>
+					</div>
+
+					<div class="form-row">
+						<div class="form-group">
+							<label class="form-label">Aula</label> <input type="text"
+								class="form-input" th:field="*{aula}" placeholder="Ej. Aula 3B" />
+						</div>
+						<div class="form-group">
+							<label class="form-label">Tutor *</label> <select
+								class="form-input" name="tutor.id" required>
+								<option value="">-- Selecciona tutor --</option>
+								<option th:each="t : ${tutores}" th:value="${t.id}"
+									th:text="${t.usuario != null ? t.usuario.nombre + ' ' + t.usuario.apellido : 'Tutor #' + t.id}"
+									th:selected="${sesion.tutor != null and sesion.tutor.id == t.id}">
+								</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="form-group">
+						<label class="form-label">Actividad del PAT</label> <select
+							class="form-input" name="actividad.id">
+							<option value="">-- Sin actividad --</option>
+							<option th:each="a : ${actividades}" th:value="${a.id}"
+								th:text="'Sem ' + ${a.semana} + ' — ' + ${a.tema} + (${a.pat != null and a.pat.carrera != null ? ' (' + a.pat.carrera.nombre + ')' : ''})"
+								th:selected="${sesion.actividad != null and sesion.actividad.id == a.id}">
+							</option>
+						</select>
+					</div>
+
+					<div class="flex gap-12" style="margin-top: 24px;">
+						<button type="submit" class="btn btn-primary"
+							th:text="${sesion.id == null ? 'Guardar sesión' : 'Actualizar sesión'}">
+							Guardar</button>
+						<a th:href="@{/sesiones}" class="btn btn-secondary">Cancelar</a>
+					</div>
+				</form>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

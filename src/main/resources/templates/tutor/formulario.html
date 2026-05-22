@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tutor | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${tutor.id == null ? 'Nuevo tutor' : 'Editar tutor'})}"></div>
+
+        <section class="card" style="max-width:760px;">
+            <div class="card-title" th:text="${tutor.id == null ? 'Registrar tutor' : 'Editar tutor'}">Tutor</div>
+
+            <form th:action="@{/tutores/guardar}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:if="${tutor.id != null}" name="id" th:value="${tutor.id}"/>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Usuario *</label>
+                        <select class="form-input" name="usuarioId" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option th:each="u : ${usuarios}"
+                                    th:value="${u.id}"
+                                    th:text="${u.nombre + ' ' + u.apellido + ' (' + u.correo + ')'}"
+                                    th:selected="${tutor.usuario != null and tutor.usuario.id == u.id}"></option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Carrera *</label>
+                        <select class="form-input" name="carreraId" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option th:each="c : ${carreras}"
+                                    th:value="${c.id}"
+                                    th:text="${c.nombre}"
+                                    th:selected="${tutor.carrera != null and tutor.carrera.id == c.id}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-input" name="activo">
+                            <option value="true" th:selected="${tutor.activo == null or tutor.activo}">Activo</option>
+                            <option value="false" th:selected="${tutor.activo != null and !tutor.activo}">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Foto (opcional)</label>
+                        <!-- Mostrar foto actual si existe -->
+                        <div th:if="${tutor.foto != null}" style="margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+                            <img th:src="@{'/uploads/' + ${tutor.foto}}"
+                                 style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid #4f46e5;"/>
+                            <span style="font-size:12px;color:#6b7280;">Foto actual</span>
+                        </div>
+                        <input type="file" name="archivoFoto" class="form-input" accept="image/*"/>
+                        <small style="color:#6b7280;font-size:11px;" th:if="${tutor.foto != null}">
+                            Deja vacío para conservar la foto actual
+                        </small>
+                    </div>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${tutor.id == null ? 'Guardar tutor' : 'Actualizar tutor'}">Guardar</button>
+                    <a th:href="@{/tutores}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

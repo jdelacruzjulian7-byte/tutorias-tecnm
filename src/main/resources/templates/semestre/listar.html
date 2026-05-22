@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Semestres | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.alert-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#15803d;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.alert-error  {background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.badge-a { display:inline-block; background:#dbeafe; color:#1e40af; border:1px solid #bfdbfe; border-radius:999px; padding:2px 10px; font-size:11px; font-weight:700; }
+.badge-b { display:inline-block; background:#fef3c7; color:#92400e; border:1px solid #fde68a; border-radius:999px; padding:2px 10px; font-size:11px; font-weight:700; }
+</style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Semestres')}"></div>
+
+        <section class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <div class="card-title" style="margin-bottom:0;">Semestres registrados</div>
+                <a th:href="@{/semestres/nuevo}" class="btn btn-primary">+ Nuevo semestre</a>
+            </div>
+
+            <div th:if="${msg}"   class="alert-success" th:utext="${msg}"></div>
+            <div th:if="${error}" class="alert-error"   th:utext="${error}"></div>
+
+            <div th:if="${semestres == null or #lists.isEmpty(semestres)}"
+                 style="text-align:center; padding:32px 0; color:#6b7280;">
+                No hay semestres registrados aún.
+            </div>
+
+            <div th:if="${semestres != null and !#lists.isEmpty(semestres)}" class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Semestre</th>
+                            <th>Periodo</th>
+                            <th>Año</th>
+                            <th>Fecha inicio</th>
+                            <th>Fecha fin</th>
+                            <th>Activo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="s : ${semestres}">
+                            <td th:text="${s.id}">1</td>
+                            <td style="font-weight:700; color:#1e3a8a;" th:text="${s.nombre ?: '—'}">Ene-Jul 2025</td>
+                            <td>
+                                <span th:if="${s.periodo == 'ENE_JUL'}" class="badge-a">🌸 Ene-Jul</span>
+                                <span th:if="${s.periodo == 'AGO_DIC'}" class="badge-b">🍂 Ago-Dic</span>
+                                <span th:if="${s.periodo == null}" style="color:#9ca3af;">—</span>
+                            </td>
+                            <td style="font-weight:600;" th:text="${s.anio ?: '—'}">2025</td>
+                            <td th:text="${s.fechaInicio != null} ? ${#temporals.format(s.fechaInicio,'dd/MM/yyyy')} : '—'">—</td>
+                            <td th:text="${s.fechaFin   != null} ? ${#temporals.format(s.fechaFin,'dd/MM/yyyy')} : '—'">—</td>
+                            <td>
+                                <span th:if="${s.activo}"  style="color:#15803d; font-weight:700;">✔ Activo</span>
+                                <span th:if="${!s.activo}" style="color:#9ca3af;">Inactivo</span>
+                            </td>
+                            <td>
+                                <div class="flex gap-8">
+                                    <a th:href="@{/semestres/editar/{id}(id=${s.id})}"
+                                       class="btn btn-secondary btn-sm">Editar</a>
+                                    <a th:href="@{/semestres/eliminar/{id}(id=${s.id})}"
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('¿Eliminar este semestre?')">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

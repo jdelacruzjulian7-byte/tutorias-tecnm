@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Carrera | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${carrera.id == null ? 'Nueva carrera' : 'Editar carrera'})}"></div>
+
+        <section class="card" style="max-width:560px;">
+            <div class="card-title"
+                 th:text="${carrera.id == null ? 'Nueva carrera' : 'Editar carrera'}">Carrera</div>
+
+            <form th:action="@{/carreras/guardar}" th:object="${carrera}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+
+                <div class="form-group">
+                    <label class="form-label">Nombre de la carrera *</label>
+                    <input type="text" class="form-input" th:field="*{nombre}"
+                           placeholder="Ej. Ingenieria en Sistemas Computacionales" required/>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${carrera.id == null ? 'Guardar carrera' : 'Actualizar carrera'}">Guardar</button>
+                    <a th:href="@{/carreras}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>

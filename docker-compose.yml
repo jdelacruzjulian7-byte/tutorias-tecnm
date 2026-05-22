@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+
+  # ─── Base de datos MySQL ───────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: tutorias-db
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: tutoria
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Descomenta la línea de abajo SOLO si haces docker compose down -v para reiniciar la BD
+      # - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p1234"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ─── Aplicación Spring Boot ────────────────────────────
+  app:
+    build: .
+    container_name: tutorias-app
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/tutoria?useSSL=false&serverTimezone=America/Mexico_City&allowPublicKeyRetrieval=true&tinyInt1isBit=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
+  uploads_data:

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Asignacion | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+<style>
+.alert-success{background:#ecfdf5;border:1px solid #bbf7d0;color:#15803d;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.alert-error  {background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:8px;margin-bottom:16px;}
+.hint {font-size:12px; color:#6b7280; margin-top:4px;}
+.hint.warning {color:#d97706;}
+select:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar(${asignacion.id == null ? 'Nueva asignacion' : 'Editar asignacion'})}"></div>
+
+        <section class="card" style="max-width:760px;">
+            <div class="card-title">Asignar tutorado a tutor</div>
+
+            <div th:if="${msg}"   class="alert-success" th:utext="${msg}"></div>
+            <div th:if="${error}" class="alert-error"   th:utext="${error}"></div>
+
+            <form th:action="@{/asignaciones/guardar}" method="post">
+                <input type="hidden" name="id" th:value="${asignacion.id}"/>
+
+                <div class="form-row">
+                    <!-- TUTOR -->
+                    <div class="form-group">
+                        <label class="form-label">Tutor *</label>
+                        <select class="form-input" name="tutorId" id="selectTutor"
+                                onchange="cargarTutorados()" required>
+                            <option value="">-- Selecciona tutor --</option>
+                            <option th:each="t : ${tutores}"
+                                    th:value="${t.id}"
+                                    th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido + ' (' + (t.carrera != null ? t.carrera.nombre : 'Sin carrera') + ')'} : 'Tutor #' + ${t.id}"
+                                    th:selected="${asignacion.tutor != null and asignacion.tutor.id == t.id}"
+                                    th:attr="data-carrera=${t.carrera != null ? t.carrera.nombre : ''}">
+                            </option>
+                        </select>
+                        <div class="hint" id="hintCarrera">Elige un tutor para ver sus tutorados disponibles.</div>
+                    </div>
+
+                    <!-- TUTORADO — se llena dinámicamente -->
+                    <div class="form-group">
+                        <label class="form-label">Tutorado *</label>
+                        <select class="form-input" name="tutoradoId" id="selectTutorado" required disabled>
+                            <option value="">-- Primero selecciona un tutor --</option>
+                        </select>
+                        <div class="hint warning" id="hintTutorado" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <!-- SEMESTRE -->
+                    <div class="form-group">
+                        <label class="form-label">Semestre *</label>
+                        <select class="form-input" name="semestreId" id="selectSemestre"
+                                onchange="cargarTutorados()" required>
+                            <option value="">-- Selecciona semestre --</option>
+                            <option th:each="s : ${semestres}"
+                                    th:value="${s.id}"
+                                    th:text="${s.nombre}"
+                                    th:selected="${asignacion.semestre != null and asignacion.semestre.id == s.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- ESTADO -->
+                    <div class="form-group">
+                        <label class="form-label">Estado</label>
+                        <select class="form-input" name="activo">
+                            <option value="true"  th:selected="${asignacion.activo == null or asignacion.activo}">Activa</option>
+                            <option value="false" th:selected="${asignacion.activo != null and !asignacion.activo}">Inactiva</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex gap-12 mt-16">
+                    <button type="submit" class="btn btn-primary"
+                            th:text="${asignacion.id == null ? 'Guardar asignacion' : 'Actualizar asignacion'}">Guardar</button>
+                    <a th:href="@{/asignaciones}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+function cargarTutorados() {
+    const tutorSel   = document.getElementById('selectTutor');
+    const semestreSel= document.getElementById('selectSemestre');
+    const tutoradoSel= document.getElementById('selectTutorado');
+    const hint       = document.getElementById('hintTutorado');
+    const hintCarrera= document.getElementById('hintCarrera');
+
+    const tutorId    = tutorSel.value;
+    const semestreId = semestreSel.value;
+
+    // Mostrar carrera del tutor seleccionado
+    const opt = tutorSel.options[tutorSel.selectedIndex];
+    const carrera = opt ? opt.getAttribute('data-carrera') : '';
+    hintCarrera.textContent = carrera
+        ? '📚 Carrera del tutor: ' + carrera + ' — solo se mostrarán tutorados de esta carrera.'
+        : 'Elige un tutor para ver sus tutorados disponibles.';
+
+    if (!tutorId) {
+        tutoradoSel.innerHTML = '<option value="">-- Primero selecciona un tutor --</option>';
+        tutoradoSel.disabled = true;
+        hint.style.display = 'none';
+        return;
+    }
+
+    // Construir URL
+    let url = '/asignaciones/tutorados-por-tutor?tutorId=' + tutorId;
+    if (semestreId) url += '&semestreId=' + semestreId;
+
+    tutoradoSel.innerHTML = '<option value="">Cargando...</option>';
+    tutoradoSel.disabled = true;
+
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            tutoradoSel.innerHTML = '<option value="">-- Selecciona tutorado --</option>';
+            if (data.length === 0) {
+                tutoradoSel.innerHTML += '<option value="" disabled>Sin tutorados disponibles en esta carrera/semestre</option>';
+                hint.textContent = '⚠ No hay tutorados disponibles de esta carrera en el semestre seleccionado.';
+                hint.style.display = 'block';
+            } else {
+                data.forEach(t => {
+                    const o = document.createElement('option');
+                    o.value = t.id;
+                    o.textContent = t.nombre;
+                    tutoradoSel.appendChild(o);
+                });
+                hint.style.display = 'none';
+            }
+            tutoradoSel.disabled = false;
+        })
+        .catch(() => {
+            tutoradoSel.innerHTML = '<option value="">Error al cargar tutorados</option>';
+            hint.textContent = 'Error de conexión. Intenta de nuevo.';
+            hint.style.display = 'block';
+        });
+}
+
+// Si hay tutor preseleccionado (modo edición), cargar tutorados al inicio
+window.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('selectTutor').value) {
+        cargarTutorados();
+    }
+});
+</script>
+</body>
+</html>

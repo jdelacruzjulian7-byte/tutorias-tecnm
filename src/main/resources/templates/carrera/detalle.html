@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalle carrera | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Detalle de carrera')}"></div>
+
+        <section class="card" style="max-width:560px;">
+            <div class="card-title">Detalle de carrera</div>
+
+            <div th:if="${carrera == null}" class="text-muted" style="text-align:center; padding:32px 0;">
+                Carrera no encontrada.
+            </div>
+
+            <div th:if="${carrera != null}">
+                <div style="margin-bottom:24px;">
+                    <div style="font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:var(--text-mid); margin-bottom:4px;">Nombre</div>
+                    <div style="font-size:17px; font-weight:700;" th:text="${carrera.nombre}">—</div>
+                </div>
+
+                <div class="flex gap-12">
+                    <a th:href="@{/carreras/editar/{id}(id=${carrera.id})}" class="btn btn-primary">Editar</a>
+                    <a th:href="@{/carreras}" class="btn btn-secondary">Volver a la lista</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

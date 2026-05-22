@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tutores | Sistema Tutorías TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}" />
+<style>
+.alert-success {
+	background: #ecfdf5;
+	border: 1px solid #bbf7d0;
+	color: #15803d;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+
+.alert-error {
+	background: #fef2f2;
+	border: 1px solid #fecaca;
+	color: #dc2626;
+	padding: 12px 16px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+	<div class="layout">
+		<div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+		<main class="main">
+			<div th:replace="~{fragments/layout :: topbar('Lista de Tutores')}"></div>
+			<section class="card">
+				<div class="card-title">
+					Tutores activos
+					<div style="display: flex; gap: 8px;">
+						<a th:href="@{/tutores/inactivos}" class="btn btn-ghost btn-sm"
+							th:if="${totalInactivos > 0}"
+							th:text="'Ver inactivos (' + ${totalInactivos} + ')'">Ver
+							inactivos</a> <a th:href="@{/tutores/nuevo}"
+							class="btn btn-primary btn-sm">+ Nuevo tutor</a>
+					</div>
+				</div>
+
+				<div th:if="${msg}" class="alert-success" th:utext="${msg}"></div>
+				<div th:if="${error}" class="alert-error" th:utext="${error}"></div>
+
+				<div class="table-wrap">
+					<table class="table">
+						<thead>
+							<tr>
+								<th>#</th>
+								<th>Foto</th>
+								<th>Nombre</th>
+								<th>Carrera</th>
+								<th>Correo</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="t : ${tutores}">
+								<td th:text="${t.id}">-</td>
+								<td><img th:if="${t.foto != null}"
+									th:src="@{'/uploads/' + ${t.foto}}"
+									style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" />
+									<div th:unless="${t.foto != null}"
+										style="width: 36px; height: 36px; border-radius: 50%; background: #4f46e5; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px;"
+										th:text="${t.usuario != null ? #strings.toUpperCase(#strings.substring(t.usuario.nombre,0,1)) : '?'}">?</div>
+								</td>
+								<td
+									th:text="${t.usuario != null} ? ${t.usuario.nombre + ' ' + t.usuario.apellido} : '-'">-</td>
+								<td th:text="${t.carrera != null ? t.carrera.nombre : '-'}">-</td>
+								<td th:text="${t.usuario != null ? t.usuario.correo : '-'}">-</td>
+								<td class="text-right"><a
+									th:href="@{'/tutores/detalle/' + ${t.id}}"
+									class="btn btn-ghost btn-sm">Ver</a> <a
+									th:href="@{'/tutores/editar/' + ${t.id}}"
+									class="btn btn-secondary btn-sm">Editar</a>
+									<form th:action="@{'/tutores/desactivar/' + ${t.id}}"
+										method="post" style="display: inline;"
+										onsubmit="return confirm('¿Desactivar este tutor?')">
+										<button type="submit" class="btn btn-ghost btn-sm"
+											style="color: #d97706;">Desactivar</button>
+									</form> <a th:href="@{'/tutores/eliminar/' + ${t.id}}"
+									class="btn btn-danger btn-sm"
+									onclick="return confirm('¿Eliminar permanentemente este tutor?')">Eliminar</a>
+								</td>
+							</tr>
+							<tr th:if="${tutores == null or #lists.isEmpty(tutores)}">
+								<td colspan="6" class="text-center text-muted"
+									style="padding: 40px;">No hay tutores activos.</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</main>
+	</div>
+</body>
+</html>

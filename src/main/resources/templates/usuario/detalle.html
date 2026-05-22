@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalle usuario | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Detalle de usuario')}"></div>
+
+        <section class="card" style="max-width:760px;">
+            <div class="card-title">Datos del usuario</div>
+            <div class="form-row">
+                <div>
+                    <div class="text-muted" style="font-size:11px;">ID</div>
+                    <div th:text="${usuario.id}">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Nombre completo</div>
+                    <div th:text="${usuario.nombre + ' ' + usuario.apellido}">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Correo</div>
+                    <div th:text="${usuario.correo}">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Rol</div>
+                    <div>
+                        <span class="badge accent" th:text="${usuario.rol != null} ? ${usuario.rol.nombre} : 'Sin rol'">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-12 mt-16">
+                <a th:href="@{'/usuarios/editar/' + ${usuario.id}}" class="btn btn-primary">Editar</a>
+                <a th:href="@{/usuarios}" class="btn btn-secondary">Volver</a>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

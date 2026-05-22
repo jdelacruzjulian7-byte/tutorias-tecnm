@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Detalle tutor | Sistema Tutorias TecNM</title>
+<link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="layout">
+    <div th:replace="~{fragments/layout :: sidebar('admin')}"></div>
+    <main class="main">
+        <div th:replace="~{fragments/layout :: topbar('Detalle de tutor')}"></div>
+
+        <section class="card">
+            <div class="card-title">Datos del tutor</div>
+
+            <!-- Foto -->
+            <div style="margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+                <img th:if="${tutor.foto != null}"
+                     th:src="@{'/uploads/' + ${tutor.foto}}"
+                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #4f46e5;"/>
+                <div th:unless="${tutor.foto != null}"
+                     style="width:80px;height:80px;border-radius:50%;background:#4f46e5;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:28px;"
+                     th:text="${tutor.usuario != null} ? ${#strings.toUpperCase(#strings.substring(tutor.usuario.nombre,0,1))} : '?'">?</div>
+                <div>
+                    <div style="font-size:20px;font-weight:700;"
+                         th:text="${tutor.usuario != null} ? ${tutor.usuario.nombre + ' ' + tutor.usuario.apellido} : '-'">-</div>
+                    <div style="font-size:13px;color:#6b7280;"
+                         th:text="${tutor.usuario != null} ? ${tutor.usuario.correo} : '-'">-</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Carrera</div>
+                    <div th:text="${tutor.carrera != null} ? ${tutor.carrera.nombre} : '-'">-</div>
+                </div>
+                <div>
+                    <div class="text-muted" style="font-size:11px;">Estado</div>
+                    <div>
+                        <span th:if="${tutor.activo}" class="badge success">Activo</span>
+                        <span th:unless="${tutor.activo}" class="badge danger">Inactivo</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-12 mt-16">
+                <a th:href="@{'/tutores/editar/' + ${tutor.id}}" class="btn btn-primary">Editar</a>
+                <a th:href="@{/tutores}" class="btn btn-secondary">Volver</a>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-title">Tutorados asignados</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>Alumno</th><th>Matricula</th><th>Carrera</th><th>Semestre</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="asig : ${asignaciones}">
+                            <td th:text="${asig.tutorado != null and asig.tutorado.usuario != null} ? ${asig.tutorado.usuario.nombre + ' ' + asig.tutorado.usuario.apellido} : '-'">-</td>
+                            <td th:text="${asig.tutorado != null} ? ${asig.tutorado.matricula} : '-'">-</td>
+                            <td th:text="${asig.tutorado != null and asig.tutorado.carrera != null} ? ${asig.tutorado.carrera.nombre} : '-'">-</td>
+                            <td th:text="${asig.semestre != null} ? ${asig.semestre.nombre} : '-'">-</td>
+                        </tr>
+                        <tr th:if="${asignaciones == null or #lists.isEmpty(asignaciones)}">
+                            <td colspan="4" class="text-center text-muted">Sin tutorados asignados.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
