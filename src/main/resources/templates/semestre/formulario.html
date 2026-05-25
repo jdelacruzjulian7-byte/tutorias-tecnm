@@ -26,38 +26,35 @@
     transition: all .15s;
     user-select: none;
 }
-.periodo-card:hover { border-color: #4f46e5; background: #f8faff; }
-.periodo-card.selected { border-color: #4f46e5; background: #eef2ff; }
-.periodo-card input[type=radio] { display: none; }
-.periodo-card .periodo-icon { font-size: 28px; margin-bottom: 6px; }
-.periodo-card .periodo-label { font-weight: 700; font-size: 15px; color: #1e3a8a; }
-.periodo-card .periodo-meses { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.periodo-card:hover { border-color: #4f46e5; background: rgba(79,70,229,.05); }
+.periodo-card.selected { border-color: #4f46e5; background: rgba(79,70,229,.1); }
+.periodo-icon  { font-size: 28px; margin-bottom: 6px; }
+.periodo-label { font-weight: 700; font-size: 15px; color: #1e3a8a; }
+.periodo-meses { font-size: 12px; color: #6b7280; margin-top: 2px; }
 
-.anio-row { display: flex; align-items: center; gap: 12px; }
-.anio-btn  {
-    width: 36px; height: 36px;
-    border: 1px solid #e5e7eb; border-radius: 8px;
-    background: #fff; font-size: 18px; cursor: pointer; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    transition: background .1s;
+.anio-row { display:flex; align-items:center; gap:12px; }
+.anio-btn {
+    width:36px; height:36px;
+    border:1px solid #e5e7eb; border-radius:8px;
+    background:#fff; font-size:20px; cursor:pointer; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .1s;
 }
-.anio-btn:hover { background: #f3f4f6; }
+.anio-btn:hover { background:#f3f4f6; }
 .anio-display {
-    font-size: 22px; font-weight: 700; color: #1e3a8a;
-    min-width: 72px; text-align: center;
+    font-size:24px; font-weight:700; color:#1e3a8a;
+    min-width:72px; text-align:center;
 }
-
 .preview-nombre {
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 16px;
-    font-weight: 700;
-    color: #1e3a8a;
-    text-align: center;
-    margin: 12px 0 20px;
-    transition: all .2s;
+    background:#eef2ff;
+    border:1px solid #c7d2fe;
+    border-radius:8px;
+    padding:10px 16px;
+    font-size:16px; font-weight:700; color:#1e3a8a;
+    text-align:center;
+    margin:12px 0 20px;
+    min-height:40px;
+    display:flex; align-items:center; justify-content:center;
 }
 </style>
 </head>
@@ -76,14 +73,12 @@
             <form action="/semestres/guardar" method="post" onsubmit="return validar()">
                 <input type="hidden" name="id" th:value="${semestre.id}"/>
 
-                <!-- PERIODO -->
+                <!-- PERIODO — input hidden, las tarjetas lo llenan via JS -->
                 <div class="form-group">
                     <label class="form-label">Periodo *</label>
-                    
-                    <!-- Input hidden que es el que realmente se envía -->
-                    <input type="hidden" name="periodo" id="periodoInput" 
-                           th:value="${semestre.periodo}" required/>
-                    
+                    <input type="hidden" name="periodo" id="periodoInput"
+                           th:value="${semestre.periodo}"/>
+
                     <div class="periodo-grid">
                         <div class="periodo-card" id="card-ene"
                              th:classappend="${semestre.periodo == 'ENE_JUL'} ? ' selected' : ''"
@@ -100,7 +95,7 @@
                             <div class="periodo-meses">Semestre B (otoño)</div>
                         </div>
                     </div>
-                    <div id="errorPeriodo" style="display:none; color:#dc2626; font-size:12px; margin-top:6px;">
+                    <div id="errorPeriodo" style="display:none;color:#dc2626;font-size:12px;margin-top:6px;">
                         ⚠ Debes seleccionar un periodo.
                     </div>
                 </div>
@@ -120,10 +115,10 @@
 
                 <!-- PREVIEW nombre generado -->
                 <div class="preview-nombre" id="previewNombre">
-                    <!-- se actualiza con JS -->
+                    Selecciona periodo y año
                 </div>
 
-                <!-- FECHAS — con valor pre-cargado en edición -->
+                <!-- FECHAS — th:value preserva la fecha en edición -->
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Fecha de inicio</label>
@@ -136,20 +131,20 @@
                                th:value="${semestre.fechaFin}"/>
                     </div>
                 </div>
-                <div id="errorFechas" style="display:none; color:#dc2626; font-size:12px; margin-top:-8px; margin-bottom:12px;">
+                <div id="errorFechas" style="display:none;color:#dc2626;font-size:12px;margin-top:-8px;margin-bottom:12px;">
                     ⚠ La fecha de fin debe ser posterior a la de inicio.
                 </div>
 
                 <!-- ACTIVO -->
                 <div class="form-group">
-                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                         <input type="checkbox" name="activo" value="true"
                                th:checked="${semestre.activo}"
-                               style="width:18px; height:18px; accent-color:#4f46e5;"/>
+                               style="width:18px;height:18px;accent-color:#4f46e5;"/>
                         <span>Marcar como semestre activo</span>
                     </label>
-                    <small style="color:#6b7280; font-size:11px; margin-left:28px;">
-                        El semestre activo es el que se usa por defecto al crear asignaciones.
+                    <small style="color:#6b7280;font-size:11px;margin-left:28px;">
+                        El semestre activo se usa por defecto al crear asignaciones.
                     </small>
                 </div>
 
@@ -164,10 +159,8 @@
 </div>
 
 <script th:inline="javascript">
-const periodoActual = /*[[${semestre.periodo}]]*/ null;
-const anioActual    = /*[[${semestre.anio != null ? semestre.anio : anioActual}]]*/ new Date().getFullYear();
-
-let periodoSel = periodoActual || null;
+// Valores actuales del servidor (en edición vienen cargados, en nuevo son null)
+let periodoSel = /*[[${semestre.periodo}]]*/ null;
 let anio = parseInt(document.getElementById('anioInput').value) || new Date().getFullYear();
 
 function seleccionarPeriodo(p) {
@@ -177,7 +170,7 @@ function seleccionarPeriodo(p) {
     document.getElementById('periodoInput').value = p;
     document.getElementById('errorPeriodo').style.display = 'none';
     actualizarPreview();
-    autoFechas();
+    sugerirFechas();
 }
 
 function cambiarAnio(delta) {
@@ -185,7 +178,7 @@ function cambiarAnio(delta) {
     document.getElementById('anioDisplay').textContent = anio;
     document.getElementById('anioInput').value = anio;
     actualizarPreview();
-    autoFechas();
+    sugerirFechas();
 }
 
 function actualizarPreview() {
@@ -195,42 +188,42 @@ function actualizarPreview() {
     el.textContent = '📅 ' + label + ' ' + anio;
 }
 
-// Sugerir fechas automáticamente si están vacías
-function autoFechas() {
+// Solo sugiere fechas si los campos están VACÍOS (no sobreescribe en edición)
+function sugerirFechas() {
     const fi = document.getElementById('fechaInicio');
     const ff = document.getElementById('fechaFin');
-    if (fi.value && ff.value) return; // no sobreescribir si ya tienen valor
+    if (fi.value || ff.value) return;
     if (!periodoSel) return;
     if (periodoSel === 'ENE_JUL') {
-        if (!fi.value) fi.value = anio + '-01-08';
-        if (!ff.value) ff.value = anio + '-07-15';
+        fi.value = anio + '-01-08';
+        ff.value = anio + '-07-15';
     } else {
-        if (!fi.value) fi.value = anio + '-08-11';
-        if (!ff.value) ff.value = anio + '-12-20';
+        fi.value = anio + '-08-11';
+        ff.value = anio + '-12-20';
     }
 }
 
 function validar() {
     if (!periodoSel) {
         document.getElementById('errorPeriodo').style.display = 'block';
-        document.getElementById('card-ene').scrollIntoView({behavior:'smooth'});
+        document.getElementById('card-ene').scrollIntoView({ behavior: 'smooth' });
         return false;
     }
     const inicio = document.getElementById('fechaInicio').value;
     const fin    = document.getElementById('fechaFin').value;
-    const err    = document.getElementById('errorFechas');
     if (inicio && fin && fin <= inicio) {
-        err.style.display = 'block';
+        document.getElementById('errorFechas').style.display = 'block';
         return false;
     }
-    err.style.display = 'none';
+    document.getElementById('errorFechas').style.display = 'none';
     return true;
 }
 
-// Init
+// Inicializar al cargar
 actualizarPreview();
-document.getElementById('fechaFin').addEventListener('change', validar);
-document.getElementById('fechaInicio').addEventListener('change', validar);
+document.getElementById('fechaFin').addEventListener('change', () => {
+    document.getElementById('errorFechas').style.display = 'none';
+});
 </script>
 </body>
 </html>

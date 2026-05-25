@@ -8,9 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface SemestreRepository extends JpaRepository<Semestre, Long> {
-
     Optional<Semestre> findFirstByActivoTrue();
-
-    /** Para validar duplicados: mismo periodo + año */
     Optional<Semestre> findByPeriodoAndAnio(String periodo, Integer anio);
 }

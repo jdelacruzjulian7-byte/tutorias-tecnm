@@ -34,27 +34,26 @@ public class SemestreController {
     @PostMapping("/guardar")
     public String guardar(
             @RequestParam(required = false) Long id,
-            @RequestParam String periodo,
-            @RequestParam Integer anio,
+            @RequestParam(required = false) String periodo,
+            @RequestParam(required = false) Integer anio,
             @RequestParam(required = false) String fechaInicio,
             @RequestParam(required = false) String fechaFin,
             @RequestParam(defaultValue = "false") boolean activo,
-            RedirectAttributes flash,
-            Model model) {
+            RedirectAttributes flash) {
 
-        // Validar periodo válido
-        if (!"ENE_JUL".equals(periodo) && !"AGO_DIC".equals(periodo)) {
-            flash.addFlashAttribute("error", "Periodo inválido. Solo se permiten ENE_JUL o AGO_DIC.");
+        // Validar periodo
+        if (periodo == null || (!periodo.equals("ENE_JUL") && !periodo.equals("AGO_DIC"))) {
+            flash.addFlashAttribute("error", "Debes seleccionar un periodo (Enero-Julio o Agosto-Diciembre).");
             return id != null ? "redirect:/semestres/editar/" + id : "redirect:/semestres/nuevo";
         }
 
-        // Validar año razonable
-        if (anio < 2000 || anio > 2100) {
+        // Validar año
+        if (anio == null || anio < 2000 || anio > 2100) {
             flash.addFlashAttribute("error", "El año debe estar entre 2000 y 2100.");
             return id != null ? "redirect:/semestres/editar/" + id : "redirect:/semestres/nuevo";
         }
 
-        // Verificar duplicado (mismo periodo + año, excluyendo el actual en edición)
+        // Verificar duplicado
         Optional<Semestre> existente = semestreRepository.findByPeriodoAndAnio(periodo, anio);
         if (existente.isPresent() && (id == null || !existente.get().getId().equals(id))) {
             String nombreDup = ("ENE_JUL".equals(periodo) ? "Enero-Julio " : "Agosto-Diciembre ") + anio;
@@ -63,7 +62,7 @@ public class SemestreController {
             return id != null ? "redirect:/semestres/editar/" + id : "redirect:/semestres/nuevo";
         }
 
-        // Construir el semestre
+        // Construir semestre
         Semestre semestre = (id != null)
             ? semestreService.buscarPorId(id).orElse(new Semestre())
             : new Semestre();
@@ -73,23 +72,19 @@ public class SemestreController {
         semestre.generarNombre();
         semestre.setActivo(activo);
 
-        if (fechaInicio != null && !fechaInicio.isBlank()) {
+        if (fechaInicio != null && !fechaInicio.isBlank())
             semestre.setFechaInicio(java.time.LocalDate.parse(fechaInicio));
-        }
-        if (fechaFin != null && !fechaFin.isBlank()) {
+        if (fechaFin != null && !fechaFin.isBlank())
             semestre.setFechaFin(java.time.LocalDate.parse(fechaFin));
-        }
 
         semestreService.guardar(semestre);
-        flash.addFlashAttribute("msg", "✅ Semestre <strong>" + semestre.getNombre() + "</strong> guardado correctamente.");
+        flash.addFlashAttribute("msg", "Semestre <strong>" + semestre.getNombre() + "</strong> guardado correctamente.");
         return "redirect:/semestres";
     }
 
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable Long id, Model model) {
-        semestreService.buscarPorId(id).ifPresent(s -> {
-            model.addAttribute("semestre", s);
-        });
+        semestreService.buscarPorId(id).ifPresent(s -> model.addAttribute("semestre", s));
         model.addAttribute("anioActual", java.time.Year.now().getValue());
         return "semestre/formulario";
     }
